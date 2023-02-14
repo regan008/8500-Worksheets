@@ -278,3 +278,7 @@ The implicit question was, "How many locations appear in each year?". The `judge
 ```
 
 (@) Write a function that filters the gay guides dataset. It should accept 2 arguments: year and state. When passed to the function the function should return only the title, type, state and year for each entry. 
+```{r}
+
+```
+
