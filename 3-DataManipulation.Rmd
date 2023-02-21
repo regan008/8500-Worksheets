@@ -177,7 +177,7 @@ southernstates <- c("AL", "AR", "FL", "GA", "KY", "LA", "MD", "MS", "NC", "SC", 
 ## Re-Shaping Data: Joins and Pivots
 
 ### Joins()
-At some point, you might have a situation where you want to join two tables together. For example, in the `almshouse_admissions` dataset there is a column called "Occupational Code".
+At some point, you might have a situation where you want to join two tables together. For example, in the `almshouse_admissions` dataset there is a column called "Descriptions.by.Clerk" which contains a code for each occupation.
 ```{r}
 data("almshouse_admissions")
 head(almshouse_admissions$Descriptions.by.Clerk)
