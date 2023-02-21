@@ -1,6 +1,217 @@
 ---
 title: 'Worksheet 4: Data Visualization'
-author: "Amanda Regan"
-date: "2023-01-05"
-output: pdf_document
+author: ''
+date: ''
 ---
+
+_This is the fourth in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+
+## Charts and Graphs with `ggplot2()`
+
+An essential element of working with data is trying to make sense of it and communicate your findings. Frequently, the way to do that is through some kind of data visualization. This week we are going to think about how to represent information graphically. How can we highlight patterns and trends in data in a way that helps ourselves and our readers/users understand historical data?
+
+R has many visualization packages but the most powerful of those is `ggplot()` which builds on the concept of a grammar of graphics. To quote Hadley Wickham, "A grammar of graphics is a tool that enables us to concisely describe the components of a graphic. Such a grammar allows us to move beyond named graphics (e.g., the `scatterplot`) and gain insight into the deep structure that underlies statistical graphics." In other words, `ggplot()` provides a set of tools to map data to visual elements on a plot, to specify the type of plot, and to control the fine details of how that plot will be displayed. 
+
+What does that mean in practice? 
+
+Any type of plot in R has 3 necessary layers. 
+
+**1) Data:** A data frame with one or more variables, each one with one or more observations. 
+
+**2) Aesthetic:** A mapping of one or more variables to one or more visual elements on the graph. For example, you could map a variable to the x-axis, another variable to the y-axis, and a categorical variable to color so that different categories get plotted with different colors.
+
+**3) Geometry:** The type or shape of the visual elements on the graph. For example, this could be a point in the case of a scatter plot, a bar in the case of a bar plot, or a line in the case of a line plot.
+
+Lets load all the libraries we'll use in this worksheet: 
+```{r message=FALSE, warning=FALSE}
+library(gapminder) #this is a dataset
+library(ggplot2) 
+library(tidyverse)
+library(DigitalMethodsData)
+```
+To begin, we're going to use one of R's built in datasets. First lets take a look at the data: 
+```{r}
+data(gapminder)
+```
+
+(@) Take a look at the data. What can you say about it? 
+
+> 
+
+This data includes variables for life exptenency and per capita GDP. Lets say we want to plot these two variables against each other for all country-years within the dataset. First we have to tell `ggplot()` what our data is. 
+```{r}
+p <- ggplot(data = gapminder)
+```
+
+What happened here? A new variable, `p` was created but we didn't get a plot yet. That is because we've told `ggplot` what data we're going to use but we haven't mapped anything to a plot yet. We need to tell `ggplot` what variables in the data should be represented by which visual elements in the plot. We also haven't told it what kind of plot we want. 
+
+Mappings in `ggplot` are defined using the `aes()` function like this: 
+```{r}
+p <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y=lifeExp))
+```
+
+In this code we gave `ggplot()` two arguments instead of one - data and mapping. This tells ggplot that we want the data about GDP to be mapped to the x-axis and data about life expectancy on the y-axis. The `mapping = aes()` argument is **linking variables in our data to things you will see on the plot**.
+
+There are numerous types of aesthetic mappings. x and y values are the most common and obvious but we could also define things like color, shape, size, and line type (solid vs dashed etc.)
+
+We can view the plot that we've created by calling the variable that we stored our plot in, `p`. What we get is an empty plot. You'll notice that ggplot has created both the x and y-axis for us but there are not points on our plot. That is because we need to add a layer to the plot that includes the data. `geom_point()` helps us do that. It takes the x and y values and plots them in a scatterplot. 
+
+```{r}
+p + geom_point()
+```
+
+To summarize what we did above, there were 3 steps we went through. First, tell `ggplot()` what our data is. Second, add `mapping = aes()` to map our variables to the plot. And, third, choose a geom. In this case our geom was `geom_point()` which created the points/data layer on our plot. A fourth step could have included adding a scale, legend, title or some other element to the graph. These are typically referred to as labs. 
+
+(@) Modify the above plot so that the variables it draws on are life expectancy and population. Then, use a comment to annotate the code and mark each of the 3 parts described above.
+```{r}
+
+```
+
+We can make this plot even more complex. Adding another value, color, to `aes()` we can change the color of each dot to correspond to a year. We also might want to rename the x and y-axis so that the labels have a more useful description of the variable. We can do so using the labs function. 
+
+```{r}
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y=lifeExp, color=year)) + geom_point() + labs(x="GDP Per Capita", y="Life Expectency in Years", title="Life Expectency and Per Capita GDP by Year") 
+```
+
+(@) Using the same plot above, can you edit the code to add a trend line? (Hint: You'll need to add another geom)
+```{r}
+
+```
+
+
+(@) The file below contains data about the population of cities in 1930 and their recreation expenditures. Can you create a scatter plot from this data? 
+```{r}
+rec <- read.csv(file = "https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/Recreation-Expenditures.csv")
+```
+
+The `geom_point()` function allows us to create scatterplots but its not the only geom within `ggplot2()`.
+
+### Histogram 
+
+A histogram is a graph used to represent the frequency distribution of a few data points of one variable. Histograms often classify data into various “bins” or “range groups” and count how many data points belong to each of those bins.
+
+```{r}
+recreational.data <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/Recreation-Expenditures.csv")
+
+ggplot(recreational.data, aes(x = population)) +
+  geom_histogram()
+```
+
+(@) Use the Boston Women's voters dataset to create a histogram of the age of voters. 
+```{r}
+
+```
+
+(@) By default, `geom_histogram()` is choosing the number of bins. Can you change the number of bins or the bin width? (Hint: How might you look up the options for this function?)
+```{r}
+
+```
+
+(@) Explain, what does changing the number of bins do? 
+
+> 
+
+### Barplots 
+
+A barplot (or barchart) is one of the most common types of graphic. Whereas a histogram shows the number of entries in each "bin" - a bar chart shows the relationship between a numeric and a categorical variable. Each entity in the categorical variable is represented as a bar. The size of the bar represents its numeric value. 
+
+```{r}
+sc.rec <- recreational.data %>% group_by(state) %>% summarize(state.expenditures = sum(total_expenditures))
+ggplot(sc.rec, aes(x = state, y = state.expenditures )) +
+  geom_col()
+```
+
+(@) Using the `gayguides` data, create a bar chart that shows the number of locations in 1980 in South Carolina, Georgia, and North Carolina. 
+```{r}
+
+```
+
+(@) Using the `gayguides` data, plot the number of religious institutions in each state.
+```{r}
+
+```
+
+(@) Formulate a question based on a dataset of your choice. That question should be something that would be appropriately answered by a bar chart. What is the question you want to explore?
+
+<
+
+(@) Now write the code to answer that question and use comments (`#`) to explain your thinking as you go.
+```{r}
+
+```
+
+### Line Charts
+
+Line charts excel at demonstrating trends over time. 
+
+```{r}
+gg.byyear <- gayguides %>% group_by(Year) %>% summarize(count = n())
+ggplot(gg.byyear, aes(x = Year, y = count)) +
+  geom_line()
+```
+
+(@) Create a bar chart that shows the number of religious institutions in the gay guides data over time.
+```{r}
+
+```
+
+(@) In the gayguides data, danger or risk is indicated in several different ways. Sometimes it through the use of an amenity categorization of (HOT) or (AYOR) which meant that these locations were frequented by police and should be used at your own risk. Othertimes, locations were listed as "inquire locally" in either the description or address field. There are many reasons a location would have requested to have been listed this way. Many times, it was due to harassment and the location deemed it too dangerous to publically list its location. Can you create a subset of the gay guides data about risk and then use it to create a chart about the usage of these indicators over time? 
+```{r}
+
+```
+
+
+### Faceting
+Unlike the previous exmaples, `facet_wrap` is not a geom.  It splits the chart window in several small parts (a grid), and displays a similar chart in each section. Each section usually shows the same graph for a specific group of the dataset. For example, remember the line chart above that graphed the number of locations in the `gayguides` data across each year? We can facet that by state to see the number of locations in each state in each year. 
+
+```{r}
+gg.byyear <- gayguides %>% filter(state == "SC" | state == "NC" | state == "GA") %>% group_by(state, Year) %>% summarize(count = n())
+
+ggplot(gg.byyear, aes(x = Year, y = count)) +
+  geom_line() + facet_wrap(~state)
+```
+
+(@) Using the state recreation data, can you create a chart that outlines the total expenditures in South Carolina by city?
+```{r}
+
+```
+
+(@) Using the gayguides data can you select 5 types of locations and chart the number of each type between 1965 and 1980? 
+```{r}
+
+```
+
+(@) Using this recreation dataset from last week, can you find the average number of volunteer and paid workers over time? 
+```{r}
+rec.workers <- read.csv("https://github.com/regan008/DigitalMethodsData/blob/main/raw/RecreationData-Wide.csv")
+
+
+```
+
+### Practice
+In the slots below use the datasets for class (or a dataset of your choice) to create a plot. The plot you create in each of these three examples should try to make some kind of historical observation. After you finish creating the plot, write a short paragraph that explains what kind of observation you were trying to make and what your plot demonstrates. 
+
+(@) Plot 1
+```{r}
+
+```
+
+(@) Plot 1 explanation: 
+>
+
+(@) Plot 2
+```{r}
+
+```
+
+(@) Plot 2 explanation: 
+>
+
+(@) Plot 3. For this one, try a different kind of plot. [Check out a useful gallery here.](https://github.com/regan008/DigitalMethodsData/blob/main/raw/RecreationData-Wide.csv)
+(For this week, avoid choosing a map. We'll talk more about maps and geographic data over the next two weeks.)
+```{r}
+
+```
+
+(@) Plot 3 explanation: 
+>
