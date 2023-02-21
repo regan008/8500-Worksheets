@@ -83,7 +83,7 @@ gayguides %>%
 ```
 
 
-(@) Every city in Greenville, SC between 1975 and 1980? 
+(@) Every entry in Greenville, SC between 1975 and 1980? 
 
 ```{r}
 
