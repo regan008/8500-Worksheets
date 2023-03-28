@@ -9,25 +9,28 @@ _This is the sixth in a series of worksheets for History 8510 at Clemson Univers
 Text analysis is an umbrella for a number of different methodologies. Generally speaking, it involves taking a set (or corpus) of textual sources, turning them into data that a computer can understand, and then running calculations and algorithms using that data. Typically, at its most basic level, that involves the counting of words.
 
 **Text analysis can be broken down into 4 general steps:** 
+
   1. Acquiring a corpus
   2. Preparing the text or Pre-processing
   3. Choosing an analytical tool 
-    * (There are many different tools or methods for text analysis.         Take a minute and google each of these methodologies: tf-idf,        topic modeling, sentiment analysis, word vector analysis,            n-grams)
+    * (There are many different tools or methods for text analysis. Take a minute and Google        each of these methodologies: tf-idf, topic modeling, sentiment analysis, word vector            analysis, n-grams)
   4. Analyzing the results
   
 In this worksheet we are focusing on basic text analysis. We'll learn how to load textual data into R, how to prepare it, and then how to analyze it using tf-idf or term-frequency according to inverse document frequency. 
 
-Before doing too much, lets load a few relevant libraries. The last two you will likely need to install.
-```{r}
+Before doing too much, lets load a few relevant libraries. The last few you will likely need to install.
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(tidytext) 
 library(readtext)
+library(widyr)
+library(SnowballC)
 ```
 
 
 ## Acquiring a Corpus
 
-First, lets install the State of the Union package. This package contains text of all the state of the Union addresses from Washington to Obama. Run `install.packages` to install the `sotu` package. 
+First, lets install the State of the Union package. This package contains text of all the state of the Union addresses from Washington to Trump. Run `install.packages` to install the `sotu` package. 
 ```{r}
 library(sotu)
 ```
@@ -36,9 +39,10 @@ This package includes both the metadata about these speeches in `sotu_meta` and 
 
 ```{r}
 meta <- as.data.frame(sotu_meta)
+head(meta)
 ```
 
-This package also includes a function that will let us write all of the files to disk. This is crucial but also an unusal step because when conducting text analysis in the real world, you will not have an R package filled with the data. Rather you will have to organize the metadata and load the files yourself. Writing these to the disk allows us to practice that step. 
+This package also includes a function that will let us write all of the files to disk. This is crucial but also an unusual step because when conducting text analysis in the real world, you will not have an R package filled with the data. Rather you will have to organize the metadata and load the files yourself. Writing these to the disk allows us to practice that step. 
 
 ```{r}
 file_paths <- sotu_dir(dir = "sotu_files")
@@ -59,7 +63,7 @@ Take a look at sotu_texts now. Notice that we have two columns, one filled with 
 head(sotu_texts, n = 5)
 ```
 
-Now our textual data is loaded into R but the textual data and the metadata are in two different dataframes. Lets combine them. Note that this isn't the way I would typically recommend doing this but its a quirk of the SOTU data. Typically when I create a metadata spreadsheet for a textual dataset I have a column for the filename which makes joining the textual data and metadata together easier. Here, we'll need to sort the dataset so that is alphabetical and then join the two together.
+Now our textual data is loaded into R but the textual data and the metadata are in two different data frames. Lets combine them. Note that this isn't the way I would typically recommend doing this but its a quirk of the SOTU data. Typically when I create a metadata spreadsheet for a textual dataset I have a column for the file name which makes joining the textual data and metadata together easier. Here, we'll need to sort the dataset so that is alphabetical and then join the two together.
 
 ```{r}
 sotu_whole <- 
@@ -82,8 +86,8 @@ One of the most basic pre-processing techniques for textual data is to tokenize 
 `tidytext` provides a function called `unnest_tokens().` We can use this to convert our sotu_whole data frame into one that is tokenized. It takes three arguments:
     
     * a tibble or data frame which contains the text
-    * the name of the newly created column that will contain the         tokens
-    * the name of the column within the data frame which contains the     text to be tokenized
+    * the name of the newly created column that will contain the tokens
+    * the name of the column within the data frame which contains the text to be tokenized
 
 ```{r}
 tidy_sotu <- sotu_whole %>%
@@ -92,7 +96,7 @@ tidy_sotu <- sotu_whole %>%
 tidy_sotu
 ```
 
-unnest_tokens() also did something else that is really important: it made everything lowercase and took out all punctuation. The function contains options if we wanted to keep those elements, but for our purposes we don't. 
+`unnest_tokens()` also did something else that is really important: it made everything lowercase and took out all punctuation. The function contains options if we wanted to keep those elements, but for our purposes we don't. 
 
 The function `unnest_tokens()` also has an option called token. Tokenizing by word is the default but you could also tokenize by characters, ngrams, lines, or sentences. 
 
@@ -109,12 +113,17 @@ For example, if I had the string: "Nothing to fear but fear itself" A bi-gram wo
 A tri-gram would look like this: 
   Nothing to fear, to fear but, but fear itself
   
-We can use unnest_tokens() to creat n-grams for us. To do that we just have to add an extra option that defines n. 
+We can use unnest_tokens() to create n-grams for us. To do that we just have to add an extra option that defines n. 
 ```{r}
 sotu_bigrams <- sotu_whole %>%
   unnest_tokens(bigram, text, token = "ngrams", n = 2)
 
 head(sotu_bigrams$bigram)
+```
+
+(@) Use `unest_tokens()` to create tri-grams. 
+```{r}
+
 ```
 
 ### Stopwords
@@ -125,22 +134,28 @@ There are stopwords that come with the `tidytext` package.
 ```{r}
 stop_words
 ```
-This is just one example of stopwords. You can find other lists such as stopwords in other languages or stopwords designed specifically for the 19th century. Its also possible you may want to edit the list of stopwords to include some of your own. 
+This is just one example of stopwords. You can find other lists such as stopwords in other languages or [stopwords designed specifically for the 19th century.](https://www.matthewjockers.net/macroanalysisbook/expanded-stopwords-list/) Its also possible you may want to edit the list of stopwords to include some of your own. For example, if we wanted to add the word, "America" to the stopwords list we could use add_row to do so: 
+```{r}
+stop_words_custom <- stop_words %>% add_row(word="America", lexicon="NA")
+```
 
-For now lets just remove the stopwords that are listed here. The easiest way to do that here is to an anti-join. We join and return all rows from our table of tokens tidy_sotu where there are no matching values in our list of stopwords. 
+
+For now lets just remove the default stopwords. The easiest way to do that here is to do an anti-join. We join and return all rows from our table of tokens tidy_sotu where there are no matching values in our list of stopwords. 
 
 ```{r}
 tidy_sotu_words <- tidy_sotu %>% 
   anti_join(stop_words)
 
 tidy_sotu_words
+
+#another way to do this would be to filter by words NOT in the stop word list like this:  filter(!word %in% stop_words$word)
 ```
 
 ### Stemming 
 
-The third most common kind of pre-process is called word stemming. This process reduces a word to its root stem. So for example: fishing becomes fish, fished becomes fish, fishes becomes fish. You can easily see how this might be useful for capturing all forms of a word.
+The third common kind of pre-process is called word stemming. This process reduces a word to its root stem. So for example: fishing becomes fish, fished becomes fish, fishes becomes fish. You can easily see how this might be useful for capturing all forms of a word.
 
-`tidytext` doesn't have its own wordstemming function. Instead we have to rely on the functions provided by `hunspell` or `SnowballC`. I prefer `SnowballC`. You may need to install it before running the below code. 
+`tidytext` doesn't have its own word stemming function. Instead we have to rely on the functions provided by `hunspell` or `SnowballC`. I prefer `SnowballC`. You may need to install it before running the below code. 
 
 ```{r}
 library(SnowballC)
@@ -148,11 +163,15 @@ tidy_sotu_words %>%
         mutate(word_stem = wordStem(word))
 ```
 
-Now if you compare the word and word_stem columns you can see the effect that wordStem had. Notice that it works well in cases like citizens=citizen but it does some odd things to words like representatives. Whether this is useful for you will depend on the question your asking (and the ocr accuracy) but its a useful technique to be familiar with nevertheless. 
+Now if you compare the word and word_stem columns you can see the effect that wordStem had. Notice that it works well in cases like 
+  
+  citizens = citizen 
+
+But it does some odd things to words like representatives. Whether this is useful for you will depend on the question your asking (and the OCR accuracy) but its a useful technique to be familiar with nevertheless. 
 
 ## Analysis
 
-Lets reset our workspace and ensure that our df is loaded with single tokenized works filter by our stopword list. Go ahead and clear your environment using the broom and then run the below code: 
+Lets reset our work space and ensure that our df is loaded with single tokenized words and filter by our stopword list. Go ahead and clear your environment using the broom button and then run the below code. This code is simply everything we've run up to this point. 
 
 ```{r}
 meta <- as.data.frame(sotu_meta)
@@ -168,12 +187,17 @@ tidy_sotu <- sotu_whole %>%
   unnest_tokens(word, text) %>% 
   anti_join(stop_words)
 ```
+(@) Before we move forward, take a minute a describe the chunk of code you just ran. What does each section do and how does it reflect the workflow for a topic modeling project? What are the important steps that are unique to topic modeling? 
+
+>
+
 
 The most basic kind of analysis we might be interested in doing is counting words. We can do that easily using the `count()` function: 
 ```{r}
 tidy_sotu %>%
   count(word, sort = TRUE)
 ```
+
 Now we know that the most used word in state of the union speeches is government. But what if we wanted to look at when presidents use the words war versus the word peace? 
 ```{r}
 tidy_sotu %>%
@@ -181,7 +205,7 @@ tidy_sotu %>%
   count(year, word)
 ```
 
-This data frame is to big to understand quickly wihtout visualziing it. We can create a bar chart to better understand it: 
+This data frame is to big to understand quickly without visualizing it. We can create a bar chart to better understand it: 
 ```{r}
 library(ggplot2)
 
@@ -202,12 +226,11 @@ tidy_sotu %>%
   arrange(desc(avg_words))
 ```
 
-Think back to the metadata that we loaded about these speeches. Why are more modern president's state of the union addresses shorter? 
-```{r}
+(@) Think back to the metadata that we loaded about these speeches. Why are more modern president's state of the union addresses shorter? 
 
-```
+>
 
-Filter the dataset to address this discrepancy and the recreate these statistics: 
+(@) Filter the dataset to address this discrepancy and the recreate these statistics: 
 ```{r}
 
 ```
@@ -215,7 +238,7 @@ Filter the dataset to address this discrepancy and the recreate these statistics
 ### Term Frequency
 Often, the raw frequency of a term is not as useful as relative frequency. In other words, how often that word appears relative to the total number of words in a text. This ratio is called **term frequency**. 
 
-You can calculate the term frequency by dividing the total occurances of a word by the total number of words. Typically you want to do this per document.
+You can calculate the term frequency by dividing the total occurrences of a word by the total number of words. Typically you want to do this per document.
 
 Here's an easy way to calculate it: 
 ```{r}
@@ -237,22 +260,24 @@ tidy_sotu %>%
   top_n(1) %>%  # take the top for each president
   print(n = Inf) # print all rows
 ```
-(@) The code above is commented to help you follow it. Walk through the code above, and explain what each line does in your own words: 
+(@) The code above is commented to help you follow it. Walk through the code above, and explain what each line does in your own words. If its a function you are unfamiliar with, look up the documentation.
 
 > 
 
 ### TF-IDF
-The above measures the frequency of terms within individual documents. But what if we know about words that seem more important based on the contents of the **entire** corpus? Thats where tf-idf or term-frequency according to inverse document frequency comes in. 
+
+The above measures the frequency of terms within individual documents. But what if we know about words that seem more important based on the contents of the **entire** corpus? That is where tf-idf or term-frequency according to inverse document frequency comes in. 
 
 Tf-idf measures how important a word is within a corpus by scaling term frequency per document according to the inverse of the term’s document frequency (number of documents within the corpus in which the term appears divided by the number of documents). The tf–idf value increases proportionally to the number of times a word appears in the document and is offset by the number of documents in the corpus that contain the word, which helps to adjust for the fact that some words appear more frequently in general. 
 
 Don't worry too much about how tf-idf is calculated. But if you feel like you are a bit lost and want to understand the specifics - I recommend reading the [tf-idf wikipedia page](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) and this blog post from [_Learn Data Science_](https://www.learndatasci.com/glossary/tf-idf-term-frequency-inverse-document-frequency/).
 
 We'll calculate tf-idf in the next code chunk but lets talk for a second about what that number will represent. It will be: 
-    * lower for words that appear frequently in many documents of the corpus, and     lowest when the word occurs in virtually all documents.
-    * higher for words that appear frequently in just a few documents of the         corpus, this lending high discriminatory power to those few documents.
 
-Luckily, tidytext provides a function for caluclating tf-idf. To calculate tf-idf the function needs a list of every word in every documenta and the count. Like this: 
+    * lower for words that appear frequently in many documents of the corpus, and lowest              when the word occurs in virtually all documents.
+    * higher for words that appear frequently in just a few documents of the corpus,                  this lending high discriminatory power to those few documents.
+
+Luckily, `tidytext` provides a function for calculating tf-idf. To calculate tf-idf the function needs a list of every word in every document and the count. Like this: 
 ```{r}
 tidy_sotu %>%
   count(doc_id, word, sort = TRUE)  
@@ -280,6 +305,53 @@ sotu.tf.idf %>% arrange(desc(tf_idf))
 ```
 
 ### Co-Occurance
-Co-occurrence gives us a sense of words that appear in the same text, but not necessarily next to each other.
+Co-occurrence gives us a sense of words that appear in the same text, but not necessarily next to each other. It shows words that are likely to co-occur. Note that this is different than topic modeling, which we'll discuss next week. 
 
-For this section we will make use of the widyr package. The function which helps us do this is the pairwise_count() function. It lets us count common pairs of words co-appearing within the same speech.
+For this section we will make use of the `widyr` package. The function which helps us do this is the `pairwise_count()` function. It lets us count common pairs of words co-appearing within the same speech. This function might take a second as the resulting data frame will be incredibly large.
+
+```{r}
+sotu_word_pairs <- sotu_whole %>% 
+  mutate(speech_end = word(text, -5000, end = -1)) %>%  # extract last 100 words
+  unnest_tokens(word, speech_end) %>%   # tokenize
+  filter(!word %in% stop_words$word) %>%  # remove stopwords
+  pairwise_count(word, doc_id, sort = TRUE, upper = FALSE) # don't include upper triangle of matrix
+
+head(sotu_word_pairs)
+```
+
+Now we have a list of words that appear near each other in the text as well as the frequency. Once again this dataset is far too large to look at in a data frame. Instead, we'll create a network graph that shows us the relationships between words for any words that appear more than 200 times. I chose 200 after looking at the above dataset and seeing that the highest count was 239. You want the network graph to be manageable and not too large. 
+```{r}
+library(igraph)
+library(ggraph)
+
+sotu_word_pairs %>% 
+  filter(n >= 200) %>%  # only word pairs that occur 200 or more times
+  graph_from_data_frame() %>% #convert to graph
+  ggraph(layout = "fr") + # place nodes according to the force-directed algorithm of Fruchterman and Reingold
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "tomato") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, 
+                 point.padding = unit(0.2, "lines")) +
+  theme_void()
+```
+(@) Create a network graph that shows the relationship between words that appear between 125 and 175 times.
+```{r}
+
+```
+
+## Analyzing Historical Journals
+
+In the github repository below I have included the text and metadata for a journal called _Mind and Body_ which ran from the 1890s until the late 1930s and chronicled the development of the physical education profession. This dataset was OCR'd from copies stored in Google Books. Using the metadata provided and the raw text files can you use what you learned above to analyze these texts? What historical conclusions might you be able to draw?
+
+```{r}
+#zip file of all the .txt files. One for each issue. 
+download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/txt.zip?raw=true", "MindAndBody.zip")
+unzip("MindAndBody.zip")
+
+# Metadata that includes info about each issue.
+metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/Metadata.csv")
+```
+
+(@) Add code chunks below and intersperse text to explain what you are doing and why. 
+
+
