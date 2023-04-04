@@ -1,0 +1,147 @@
+---
+title: 'Worksheet 6: Text Analysis'
+author: ''
+date: ''
+---
+
+_This is the seventh in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+
+Text analysis is an umbrella for a number of different methodologies. Generally speaking, it involves taking a set (or corpus) of textual sources, turning them into data that a computer can understand, and then running calculations and algorithms using that data. Typically, at its most basic level, that involves the counting of words.
+
+Topic modeling (TM) is one type of text analysis that is particularly useful for historians. 
+
+TM takes collections or corpuses of documents and returns groups of "topics" from those documents. It is a form of unsupervised classification that finds groups of items that are probabilistically likely to co-occur. 
+
+Latent Dirichlet allocation (LDA) is the most popular algorithm or method for topic modeling, although there are others. It assumes that each document has a mixture of topics and that each topic is a mixture of words. That means that topics overlap each other in terms of content rather than being confined to distinct and singular groups. 
+
+To prepare a corpus for topic modeling, we'll do many of the same types of operations that we used last week to prepare a corpus for analysis. First we'll pre-process the data and then we'll create a document term matrix from our corpus using the `tm` (text mining) package. 
+
+```{r}
+library(tidytext)
+library(tidyverse)
+library(readtext)
+library(tm)
+library(topicmodels)
+
+```
+
+```{r}
+download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/TheAmericanCity.zip?raw=true", "AmCity.zip")
+unzip("AmCity.zip")
+
+# Metadata that includes info about each issue.
+metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/AmCityMetadata.csv")
+
+meta <- as.data.frame(metadata)
+#meta$Filename <- paste("MB_", meta$Filename, sep="")
+file_paths <- system.file("TheAmericanCity/")
+ac_texts <- readtext(paste("TheAmericanCity/", "*.txt", sep=""))
+ac_whole <- full_join(meta, ac_texts, by = c("filename" = "doc_id")) %>% as_tibble() 
+
+tidy_ac <- ac_whole %>%
+  unnest_tokens(word, text) %>% 
+  filter(str_detect(word, "[a-z']$")) %>% 
+  anti_join(stop_words)
+```
+The above code borrows from what we did last week. It pulls in the texts from the _The American City_ corpus, joins them together into a single data frame, and then turns then uses `unnest_tokens()` to tokenize the text and, finally, removes stop words. 
+
+For topic modeling, we need a Document Term Matrix, or a DTM. Topic Modeling has the documents running down one side and the terms across the top. `Tidytext` provides a function for converting to and from DTMs. First, we need to create a document that has the doc_id, the word and the count of the number of times that word occurs. We can do that using `count()`.
+
+```{r}
+tidy_ac_words <- tidy_ac %>% count(filename, word)
+```
+
+Now we can use `cast_dtm()` to turn `tidy_mb_words` into a dtm. 
+
+```{r}
+ac.dtm <- tidy_ac_words %>% 
+  count(filename, word) %>% 
+  cast_dtm(filename, word, n)
+```
+
+If you run `class(mb.dtm)` in your console you will notice that it now has a class of "DocumentTermMatrix". 
+
+Now that we have a dtm, we can create a topic model. For this, we'll use the topic models package and the `LDA()` function. Take a minute and read the documentation for `LDA()`.
+
+There are two important options when running `LDA()`. The first is k which is the number of topics you want the model to generate. What number topics you generate is a decision that often takes some experimentation and depends on the size of your corpus. The American City corpus isn't that bigbut still has over 209k words. In this instance, because the corpus is so small we're going to start with a small number of topics. Going above 5 causes errors with this particular corpus. Later, when you work with a different corpus you should experiment with changing the number of topics from 10 to 20 to 30 to 50 to see how it changes your model. 
+
+The second important option when running `LDA()` is the seed option. You don't worry too much about what setting the seed does, but put simply - it ensures the output of the model is predictable and reproducible. Using the seed ensures that if you come back to your code later or someone else tries to run it, the model will return exactly the same results. 
+
+Lets now train our model. This will take a few minutes: 
+```{r}
+ac.lda <- LDA(ac.dtm, k = 5, control = list(seed = 12345))
+ac.lda
+```
+
+Now we have a LDA topic model that has 5 topics. There are two ways to look at this model: word-topic probabilities and document-topic probabilities. 
+
+Lets start with **word-topic probabilities.**
+
+Every topic is made up of words that are most associated with that topic. Together these words typically form some sort of theme. To understand what this looks like the easiest thing to do is create a bar chart of the top terms in a topic. 
+
+```{r}
+ac.topics <- tidy(ac.lda, matrix = "beta")
+ac.topics
+```
+What we have here is a list of topics and the weight of each term in that topic. Essential we have turned this into a one-topic-per-term-per-row format. So, for example, the term 10th has a weight of 5.135047e-05 in topic 1 but 7.269700e-05 in topic 2. Now that doesn't mean a lot to us at this moment and this format is impossible to grasp in its current size and iteration, but we can use tidyverse functions to pair this down and determine the 10 terms that are most common within each topic. 
+```{r}
+ac.top.terms <- ac.topics %>%
+  group_by(topic) %>%
+  top_n(5, beta)
+
+ac.top.terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+```
+(@) Can you adjust the code above to show the top 10 words from just one topic?
+```{r}
+
+```
+
+Another useful way to look at the words in each topic is by visualizing them as a wordcloud.
+```{r warning=FALSE}
+library(wordcloud)
+topic1 <- ac.topics %>% filter(topic == 2)
+wordcloud(topic1$term, topic1$beta, max.words = 100, random.order = FALSE,
+    rot.per = 0.3, colors = brewer.pal(6, "Dark2"))
+```
+
+
+Now we can see what words are most common in each topic. But the document-topic probabilities are also useful for understanding what topics are prevalent in what documents. Just as each topic is made up of a mixture of words, the LDA algorithm also assumes that each topic is made up of a mixture of topics. 
+
+```{r}
+ac.documents <- tidy(ac.lda, matrix = "gamma")
+ac.documents
+```
+For each document, the model gives us an estimated proportion of what words in the document are from a topic. So for the April 1915 issue it estimates that about 23% of the words are from topic 1. 
+
+This is easier to see if we filter to see the breakdown for just one document. 
+```{r}
+ac.documents %>%  filter(document == "1916_May.txt") %>% arrange(desc(gamma))
+```
+
+(@) Use the rest of this worksheet to experiment with topic modeling. I've added the code to download a much larger dataset - the issues of Mind and Body. This corpus has 413 documents ranging from the 1890s to 1936. You'll want to start with at least 25 topics. 
+```{r}
+download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/MindAndBody.zip?raw=true", "MB.zip")
+unzip("MB.zip")
+
+# Metadata that includes info about each issue.
+metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/mb-metadata.csv")
+```
+
+(@) What happens if you create a custom stopword list? How does this change the model?
+```{r}
+
+```
+
+(@) Can you create a topic model for just the documents in the 1920s? How does that change the model? 
+```{r}
+
+
+```
+
+
+This was the final worksheet for this class. You did it - you learned to code in R! Congrats!
