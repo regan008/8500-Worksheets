@@ -1,5 +1,5 @@
 ---
-title: 'Worksheet 6: Text Analysis'
+title: 'Worksheet 7: Topic Modeling'
 author: ''
 date: ''
 ---

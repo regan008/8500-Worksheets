@@ -1,7 +1,6 @@
 ---
-title: "2-DataStructures"
+title: "Worksheet 2: Data Structures"
 format: html
-editor: visual
 ---
 
 _This is the second in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document to a pdf, and upload it to canvas._
