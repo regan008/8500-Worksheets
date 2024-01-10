@@ -145,6 +145,7 @@ ggplot(sc.rec, aes(x = state, y = state.expenditures )) +
 Line charts excel at demonstrating trends over time. 
 
 ```{r}
+data(gayguides)
 gg.byyear <- gayguides %>% group_by(Year) %>% summarize(count = n())
 ggplot(gg.byyear, aes(x = Year, y = count)) +
   geom_line()

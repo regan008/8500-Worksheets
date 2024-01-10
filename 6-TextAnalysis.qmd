@@ -344,6 +344,7 @@ sotu_word_pairs %>%
 In the github repository below I have included the text and metadata for a journal called _Mind and Body_ which ran from the 1890s until the late 1930s and chronicled the development of the physical education profession. This dataset was OCR'd from copies stored in Google Books. Using the metadata provided and the raw text files can you use what you learned above to analyze these texts? What historical conclusions might you be able to draw?
 
 ```{r}
+#| eval: false
 #zip file of all the .txt files. One for each issue. 
 download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/txt.zip?raw=true", "MindAndBody.zip")
 unzip("MindAndBody.zip")

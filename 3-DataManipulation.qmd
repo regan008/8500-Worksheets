@@ -2,9 +2,6 @@
 title: 'Worksheet 3: Data Manipulation'
 author: "your name here"
 date: "2023-02-14"
-output:
-  html_document:
-    df_print: paged
 ---
 _Before you begin this worksheet this week, please reinstall `DigitalMethodsData` from GitHub by running: `devtools::install_github("regan008/DigitalMethodsData")` in your console. Also be sure that you have installed the Tidyverse library._
 
@@ -31,8 +28,9 @@ data("gayguides")
 ```
 
 ### Select
-Lets start with `select()`. This function allows you to subset columns using their names and types. 
+Lets start with `select()`. This function allows you to subset columns using their names and types. The `eval: false` line is a chunk option that simply prevents Quarto from printing 60k rows of data in your final rendered document. You can still run the chunk as you normally would.
 ```{r}
+#| eval: false
 gayguides %>% 
   select(title, Year)
 ```
@@ -56,16 +54,20 @@ Notice that this subsetted the data and returned only the title and year. Howeve
 The filter function subsets a data frame and retains all the rows that satisfy your conditions. To be retained, the row must produce a value of TRUE for _all_ of the conditions you provide. 
 
 ```{r}
+#| eval: false
+
 gayguides %>% filter(Year > 1980)
 ```
 
 Filter also works with the logical values we learned earlier this semester.
 
 ```{r}
+#| eval: false
 gayguides %>% filter(Year == 1970 | Year == 1980)
 ```
 And strings: 
 ```{r}
+#| eval: false
 gayguides %>% 
   filter(city == "Greenville")
 ```
@@ -103,6 +105,7 @@ gayguides %>%
 The `mutate()` function adds new variables and preserves existing one. This is useful when you want to create a new column based on other values. For example, in the `statepopulation` dataset, we want to ask "How much did the population increase between 1800 and 1900 in each state?." We can do that by subtracting the population in 1900 from 1800 and storing that value in a new column. 
 
 ```{r}
+#| eval: false
 data("statepopulations")
 statepopulations %>% mutate(difference = X1900 - X1800) 
 ```
@@ -122,6 +125,8 @@ statepopulations %>% mutate(difference = X1900 - X1800)
 `Arrange()` orders the rows of a data frame by the values of selected columns. In other words it sorts a data frame by a variable. In the `gayguides` data, we can sort the data by year with the earliest year first. If we wanted the latest year first, we could do so by using the `desc()` function. 
 
 ```{r}
+#| eval: false
+
 gayguides %>%
   arrange(Year)
 

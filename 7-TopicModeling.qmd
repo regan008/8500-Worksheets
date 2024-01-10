@@ -145,3 +145,4 @@ metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalys
 
 
 This was the final worksheet for this class. You did it - you learned to code in R! Congrats!
+

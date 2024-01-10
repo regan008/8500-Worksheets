@@ -1,11 +1,7 @@
 ---
 title: 'Worksheet 1: R Basics'
-author: "Amanda Regan"
-date: "2022-12-14"
-output:
-  html_document:
-    df_print: paged
-  pdf_document: default
+author: ""
+date: ""
 ---
 _This is the first in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document to a pdf, and upload it to canvas._
 
@@ -40,7 +36,7 @@ The next type of value is a **string**. Strings are lines of text. Sometimes the
 "Go Tigers"
 ```
 
-(@) Try to create your own string. 
+(@) Try to create your own string.
 ```{r}
 
 ```
@@ -401,3 +397,4 @@ gayguides$title[500]
 
 
 CONGRATS! You've completed your first worksheet for Digital Methods II. That wasn't so bad, right? 
+

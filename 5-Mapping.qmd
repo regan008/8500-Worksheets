@@ -1,7 +1,7 @@
 ---
-title: 'Worksheet 5: Mapping'
-author: ''
-date: ''
+title: "Worksheet 5: Mapping"
+format: html
+editor: visual
 ---
 
 _This is the fifth in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
@@ -108,6 +108,7 @@ ggplot() +
 Lets return to the recreational data for a minute.
 
 ```{r}
+#| eval: false
 head(rec.data.coordinates)
 ```
 One interesting way to visualize this map might be to plot each location as a point on the map but to use the total_expenditures values to determine the size of the points. 
