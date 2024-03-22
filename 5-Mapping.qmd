@@ -125,12 +125,13 @@ ggplot() +
   geom_point(data = rec.data.coordinates, mapping = aes(x=longitude, y=latitude, size=total_expenditures))
 ```
 
+---
+
 ```{r}
 library(readr) #you may have to install it using `install.packages()`. 
-library(rgdal)
 library(sf)
-library(maptools)
 library(ipumsr)
+library(tidyverse)
 
 #NHGIS data is stored in zip files. R has functions for dealing with these but we still need to download the file to our server. Here we're going to write a function that will create a new directory, download the data, and rename it. 
 dir.create("data/", showWarnings = FALSE)
@@ -145,24 +146,35 @@ get_data()
 nhgis_csv_file <- "data/nhgis_data.zip"
 nhgis_shp_file <- "data/nhgis_simplified_shape.zip"
 
-#load the data and shape file into read_nhgis_sf
-nhgis <- read_nhgis_sf(
-  data_file = nhgis_csv_file,
+#load the shape file and then the data file into read_nhgis_sf
+nhgis_shp <- read_ipums_sf(
   shape_file = nhgis_shp_file
 )
+nhgis_data <- read_nhgis(nhgis_csv_file)
+
+#Use the ipums join file to join both the data and shape file together.
+nhgis <- ipums_shape_full_join(nhgis_data, nhgis_shp, by = "GISJOIN")
 
 #filter nhgis so that the map focuses on the 48 contiguous states. 
-nhgis <- nhgis %>% filter(STATENAM != "Alaska Territory" & STATENAM != "Hawaii Territory")
+nhgis <- nhgis %>% filter(STATE != "Alaska Territory" & STATENAM != "Hawaii Territory")
 
 #plot 
 ggplot(data = nhgis, aes(fill = AZF001)) +
   geom_sf() 
 
 ```
-(@) In the code above, why filter out Hawaii and Alaska? Try uncommenting that line and rerunning the code. What happens? Why might we want to do this? Why might we not want to do this? How does it shape the interpretation?
+(@) In the code above, why filter out Hawaii and Alaska? Try commenting out that line and rerunning the code. What happens? Why might we want to do this? Why might we not want to do this? How does it shape the interpretation?
 >
 
-This is a great start. But using AZF001 (Native born males) as the fill does not create a useful visualization. It doesn't give us a sense of the proportion of that data. What would be much better, is if we knew what percentage of the total population foreign born males represented. To get that we have to calculate it. The next few questions will walk build on the code above and walk you through doing this.
+This is a great start. But using AZF001 (Native born males) as the fill does not create a useful visualization. It doesn't give us a sense of the proportion of that data. There are multiple problems with the map as it is, but one is that the color scale makes this incredibly hard to read. We can fix that by using a scale to break the values of AZF001 into bins and assign each a color. R has a function for this. It comes from the scales pacakge which you may need to install.
+
+```{r}
+library(scales)
+ggplot(data = nhgis, aes(fill = AZF001)) +
+  geom_sf() + scale_fill_distiller(name="Native Born Males", palette = "Spectral" , breaks = pretty_breaks(n = 10))
+```
+
+This is now much more readable but the numbers represented are simply the raw population count. That may be fine depending on your question but what would be much better, is if we knew what percentage of the total population foreign born males represented. To get that we have to calculate it. The next few questions will walk build on the code above and walk you through doing this.
 
 (@) First, create a variable called total_male_pop, with the total foreign and native born male population by summing the variables AZF001 and AZF003. 
 ```{r}
@@ -221,7 +233,7 @@ leaflet(data=rec.data.coordinates) %>% addTiles() %>% addMarkers(~longitude, ~la
 
 
 ### Exercises
-For the next portion of this worksheet I'd like you to look back at the email about the National Parks Data. Using this data (link below) you should use ggplot (charts, maps) and other mapping tools to come up with several ways to visualize it based on the points outlined in Dr. Barczewski's email. You should try to think about this from the perspective of her larger book project, how could you visualize this data to help her make a compelling argument? 
+For the next portion of this worksheet you will use some data about national parks that Dr. Barczewski created. Using this data (link below) you should use ggplot (charts, maps) and other mapping tools to come up with several ways to visualize it. You should try to think about this from the perspective of her larger book project, how could you visualize this data to help her make a compelling argument? See the email I send for more details about her project. Pick a dimension and make maps based on it.
 
 ```{r}
 parks <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/parks-geocoded.csv")
