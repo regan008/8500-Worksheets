@@ -45,11 +45,6 @@ Now we have latitude and longitude coordinates for our data.
 data("BostonWomenVoters")
 ```
 
-(@) As mentioned above - there are many ways to make a map in R. The `ggmap()` package has a function called `qmplot()` which allows for the quick plotting of maps with data. Look up the documentation for this package and use it to create a plot of the recreational data that we gecode above.
-```{r}
-
-```
-
 ### Maps with `ggplot()`
 
 Just like charts in ggplot, maps in ggplot are plotted using a variety of layers. To build a map we need to supply it with geographic data that can use to plot a base map. Your base map will differ depending on the scale of your data, the questions you are asking, and your area of study. For the purposes of this worksheet lets map the gay guides data. Typically you'd need to geocode this data first, but this data has already been geolocated for you. 
