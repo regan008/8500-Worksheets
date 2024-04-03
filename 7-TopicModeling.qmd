@@ -28,7 +28,9 @@ library(topicmodels)
 ```{r}
 download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/TheAmericanCity.zip?raw=true", "AmCity.zip")
 unzip("AmCity.zip")
+```
 
+```{r}
 # Metadata that includes info about each issue.
 metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/AmCityMetadata.csv")
 
@@ -42,6 +44,9 @@ tidy_ac <- ac_whole %>%
   unnest_tokens(word, text) %>% 
   filter(str_detect(word, "[a-z']$")) %>% 
   anti_join(stop_words)
+
+tidy_ac <- tidy_ac %>% filter(!grepl('[0-9]', word))
+
 ```
 The above code borrows from what we did last week. It pulls in the texts from the _The American City_ corpus, joins them together into a single data frame, and then turns then uses `unnest_tokens()` to tokenize the text and, finally, removes stop words. 
 
@@ -81,13 +86,13 @@ Every topic is made up of words that are most associated with that topic. Togeth
 
 ```{r}
 ac.topics <- tidy(ac.lda, matrix = "beta")
-ac.topics
+head(ac.topics)
 ```
 What we have here is a list of topics and the weight of each term in that topic. Essential we have turned this into a one-topic-per-term-per-row format. So, for example, the term 10th has a weight of 5.135047e-05 in topic 1 but 7.269700e-05 in topic 2. Now that doesn't mean a lot to us at this moment and this format is impossible to grasp in its current size and iteration, but we can use tidyverse functions to pair this down and determine the 10 terms that are most common within each topic. 
 ```{r}
 ac.top.terms <- ac.topics %>%
-  group_by(topic) %>%
-  top_n(5, beta)
+  arrange(desc(beta)) %>% 
+  group_by(topic) %>% slice(1:5)
 
 ac.top.terms %>%
   mutate(term = reorder_within(term, beta, topic)) %>%
@@ -114,22 +119,40 @@ Now we can see what words are most common in each topic. But the document-topic 
 
 ```{r}
 ac.documents <- tidy(ac.lda, matrix = "gamma")
-ac.documents
+head(ac.documents)
 ```
-For each document, the model gives us an estimated proportion of what words in the document are from a topic. So for the April 1915 issue it estimates that about 23% of the words are from topic 1. 
+For each document, the model gives us an estimated proportion of what words in the document are from a topic. So for the April 1915 issue it estimates that about 23% of the words are from topic 1. The gamma number represents the posterior topic distribution for each document. 
 
 This is easier to see if we filter to see the breakdown for just one document. 
 ```{r}
 ac.documents %>%  filter(document == "1916_May.txt") %>% arrange(desc(gamma))
 ```
 
+This gamma value is really useful and we can use it to see which topics appear in which documents the most. This is frequently referred to as looking at topics over time. 
+
+We can do that using the ac.documents dataframe that we just created but it needs to be joined with the metadata. Again, this is why it is important to have a filename within the metadata spreadsheet. To join these two together we can do a full_join because we want to keep all of the columns.
+```{r}
+topics.by.year <- full_join(ac.documents, metadata, by = join_by(document == filename))
+```
+
+Now what we have is a document that includes the proportion of each topic in each document. Because this is a dataset about a periodical, we have values in our metadata that will make it easy to plot the distrubtion of a topic over time -- in this case for each edition of the journal.
+```{r}
+topics.by.year$issue_date <- paste(topics.by.year$month, " ", topics.by.year$year, sep = "")
+ggplot(data=topics.by.year, aes(x=issue_date, y=gamma)) + geom_bar(stat="identity") + facet_wrap(~ topic, scales = "free") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+Using this we can tell that topic 5, which from earlier had the words improve, grow, ties, contracts, and gasoline as the top five words, is most prominent in January 1915. 
+
 (@) Use the rest of this worksheet to experiment with topic modeling. I've added the code to download a much larger dataset - the issues of Mind and Body. This corpus has 413 documents ranging from the 1890s to 1936. You'll want to start with at least 25 topics. 
 ```{r}
+#| eval: false
 download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/MindAndBody.zip?raw=true", "MB.zip")
 unzip("MB.zip")
+```
 
+```{r}
 # Metadata that includes info about each issue.
-metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/mb-metadata.csv")
+mb.metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/mb-metadata.csv")
 ```
 
 (@) What happens if you create a custom stopword list? How does this change the model?
@@ -143,6 +166,22 @@ metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalys
 
 ```
 
+(@) Now, lets return to the Buffalo Bill data from last week. You should be able to use topic modeling to address two of the research questions provided:
 
-This was the final worksheet for this class. You did it - you learned to code in R! Congrats!
+* Can we detect some change over time in promotion language and reception language (marketing and reviewing)? Were there types of characters, scenarios, action promised in promotional material and/or noted in reviews earlier vs later?
+* What can be gleaned from the items tagged as extraneous as far as topics? These are news items that are somehow related to BBWW. Crime, finances, celebrity, etc.
+
+To analyze this you should first generate a topic model for the buffalo bill data. Play with the number of topics until you find a number that feels about right for the dataset. I am guessing it'll be in the 8-15 range but you'll need to play with it to see what number gives you the best fit. 
+
+To address the first research question, you'll need to plot topics over time. I would create three models, one for all of the data, one for promotion, and one for reception. What do we learn by doing this?
+
+For the second, a general topic model of the extraneous articles will be needed. 
+
+Add code blocks below as necessary.
+
+(@) Finally, when you are all done. Write up your findings. What research question did you focus on and what did you learn? 
+
+
+
+**This was the final worksheet for this class. You did it - you learned to code in R! Congrats!**
 
