@@ -1,9 +1,9 @@
 ---
-title: "Worksheet 5: Mapping"
+title: "Worksheet 7: Mapping"
 format: html
 ---
 
-_This is the fifth in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+_This is the seventh in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
 
 ## Mapping with `ggmap()` and `ggplot2()`
 
@@ -80,8 +80,8 @@ gayguides <- gayguides %>% filter(Year == 1965)
 And then we can use the same mapping code from above but this time we're going to add an additional geom -- `geom_point()` which will point to each of our locations from 1965. 
 ```{r}
 ggplot() + 
-  geom_map( data = usa, map = usa, aes(long, lat, map_id=region)) +
-  geom_point(data = gayguides, mapping = aes(x=lon, y=lat))
+  geom_map(data = usa, map = usa, aes(long, lat, map_id=region), fill = "lightgray", color = "black") +
+  geom_point(data = gayguides, mapping = aes(x = lon, y = lat), color = "red")
 ```
 
 (@) This map looks slightly funny, but that is because the data includes entries outside of the contiguous United States. Try filtering out those entries and mapping this again. Can you change the color or size of the points? Can you add a title?
@@ -110,7 +110,7 @@ One interesting way to visualize this map might be to plot each location as a po
 We can do that by making a small adjustment to the map we made previously. First lets recreate a basic map of all these locations using `ggplot()`
 ```{r}
 ggplot() + 
-  geom_map( data = usa, map = usa, aes(long, lat, map_id=region)) +
+  geom_map(data = usa, map = usa, aes(long, lat, map_id=region), fill = "lightgray", color = "black") +
   geom_point(data = rec.data.coordinates, mapping = aes(x=longitude, y=latitude))
 ```
 
@@ -125,7 +125,7 @@ ggplot() +
 ```{r}
 library(readr) #you may have to install it using `install.packages()`. 
 library(sf)
-library(ipumsr)
+library(ipumsr) #you may need to install this. If you are on a mac, it may give you warnings. Try loading it to verify installation worked. 
 library(tidyverse)
 
 #NHGIS data is stored in zip files. R has functions for dealing with these but we still need to download the file to our server. Here we're going to write a function that will create a new directory, download the data, and rename it. 
