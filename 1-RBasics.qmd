@@ -3,7 +3,8 @@ title: 'Worksheet 1: R Basics'
 author: ""
 date: ""
 ---
-_This is the first in a series of worksheets for History 8510 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), knit your document to a pdf, and upload it to canvas._
+
+_This is the first in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
 
 ## What is R? 
 To start let's define what exactly R is. R is a language and environment for statistical computing and graphics. R provides a variety of statistical and graphical techniques and its very extensible which makes it an ideal language for historians.  

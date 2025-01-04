@@ -1,9 +1,10 @@
 ---
 title: 'Worksheet 3: Data Manipulation'
-author: "your name here"
-date: "2023-02-14"
+author: ""
+date: ""
 ---
-_Before you begin this worksheet this week, please reinstall `DigitalMethodsData` from GitHub by running: `devtools::install_github("regan008/DigitalMethodsData")` in your console. Also be sure that you have installed the Tidyverse library._
+
+_This is the third in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
 
 R has powerful tools for manipulating data. The Tidyverse is a collection of packages for R that are designed for data science. Take a look at the website for the Tidyverse and the list of packages that are included at: [https://www.tidyverse.org/packages/](https://www.tidyverse.org/packages/)
 
