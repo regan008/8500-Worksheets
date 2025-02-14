@@ -219,7 +219,7 @@ The most important choice statement in R is an `if` statement.
 An `if` statement allows you to check the condition of something and then determine what should be done based on that input. 
 
 The basic format is this: 
-```
+```{r}
 if (condition) true_action 
 #OR
 if(condition) true_action else false action 
@@ -254,7 +254,7 @@ if (x > 90) {
 
 ```
 
-(@) Create a list of presidents and store it in a variable. Use an `if` statement to check if the number of presidents in the list is more than 5. If its not indicate that too. 
+(@) Create a list of presidents and store it in a variable. Use an `if` statement to check if the number of presidents in the list is more than 5. If its not, indicate that too. 
 ```{r}
 
 ```
@@ -440,27 +440,29 @@ GeorgeWashington <- grade(60)
 
 Here's a more complex example: 
 ```{r}
-gg.locations <- function (city, year) {
+gg.locations <- function (d.city, d.year) {
   data(gayguides)
 
   for (i in 1:length(gayguides$city)) {
-    if (gayguides$city[i] == city && gayguides$Year[i] == year) {
+    if (gayguides$city[i] == d.city && gayguides$Year[i] == d.year) {
      print(paste("Found a location called ", gayguides$title[i]))
     } else {
       next 
     } 
   }
 }
+
+gg.locations("San Diego", 1980)
 ```
 
-(@) Write a function that uses the things you've learned in this worksheet. The function should accept two arguments, city and year. It should pull all the locations in that city and year and return a statement that says "Found a location called xxx". (Where x is the title of a location in that year and city.) 
+(@) Write a function that accepts two arguments: a state and a year. The function should pull all the locations in that state and year from the gayguides dataset and return a statement that says "Found a location in [state] called [location title]". (Where [state] is the state and [location title] is the title of a location in that year and state.)
+
 ```{r}
 
 ```
 
-(@) Use the Boston Women Voter dataset. Write a function that accepts the name of an occupation. Your function should return new dataframe that includes the records for every voter listed with that occupation.  
+(@) Use the Boston Women Voters dataset (BostonWomenVoters). Write a function that accepts the name of an occupation. Your function should return new dataframe that includes the records for every voter listed with that occupation.  
 ```{r}
-
 
 ```
 
