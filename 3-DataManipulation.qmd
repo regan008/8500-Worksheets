@@ -23,7 +23,7 @@ All of these verbs play nicely and combine naturally with `group_by()` which all
 Lets load some data and libraries for our work. 
 ```{r}
 library(DigitalMethodsData)
-library(dplyr)
+library(tidyverse)
 library(magrittr)
 data("gayguides")
 ```
