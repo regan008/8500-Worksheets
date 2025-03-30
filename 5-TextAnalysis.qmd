@@ -171,7 +171,7 @@ But it does some odd things to words like representatives. Whether this is usefu
 
 ## Analysis
 
-Lets reset our work space and ensure that our df is loaded with single tokenized words and filter by our stopword list. Go ahead and clear your environment using the broom button and then run the below code. This code is simply everything we've run up to this point. 
+Lets reset our work space and ensure that our df is loaded with single tokenized words and filter by our stopword list. Go ahead and clear your environment by running `rm(list=ls())` in the console. Then run the below code. This code is simply everything we've run up to this point. 
 
 ```{r}
 meta <- as.data.frame(sotu_meta)
@@ -219,14 +219,14 @@ tidy_sotu %>%
 
 We also might want to ask about the average length of each president's state of the union address. Who had the longest speech and who had the shortest?
 ```{r}
-tidy_sotu %>%
+sotu.length <- tidy_sotu %>%
   count(president, doc_id)  %>% 
   group_by(president) %>% 
   summarize(avg_words = mean(n)) %>% 
   arrange(desc(avg_words))
 ```
 
-(@) Think back to the metadata that we loaded about these speeches. Why are more modern president's state of the union addresses shorter? 
+(@) Think back to the metadata that we loaded about these speeches. Why are the STOU addresses for more modern president's shorter than others? (For example Bush vs Teddy Roosevelt)
 
 >
 
@@ -274,8 +274,8 @@ Don't worry too much about how tf-idf is calculated. But if you feel like you ar
 
 We'll calculate tf-idf in the next code chunk but lets talk for a second about what that number will represent. It will be: 
 
-    * lower for words that appear frequently in many documents of the corpus, and lowest              when the word occurs in virtually all documents.
-    * higher for words that appear frequently in just a few documents of the corpus,                  this lending high discriminatory power to those few documents.
+    * lower for words that appear frequently in many documents of the corpus, and lowest when the word occurs in virtually all documents.
+    * higher for words that appear frequently in just a few documents of the corpus, this lending high discriminatory power to those few documents.
 
 Luckily, `tidytext` provides a function for calculating tf-idf. To calculate tf-idf the function needs a list of every word in every document and the count. Like this: 
 ```{r}
@@ -298,7 +298,7 @@ Lets look at what the words with the highest tf-idf score are.
 sotu.tf.idf %>% arrange(desc(tf_idf))
 ```
 
-(@) Pick a president who served more than one term. Filter the dataset and generate both raw word counts and tf-idf scores for that president. What words are most significant in each method? Why and what does that tell you about that president? 
+(@) Pick a president who served more than one term. Filter the dataset and generate both raw word counts and tf-idf scores for that president. What words are most significant in each method? Why and what does that tell you about that president and their administration?  
 
 ```{r}
 
@@ -339,66 +339,31 @@ sotu_word_pairs %>%
 
 ```
 
-## Analyzing Historical Newspapers About Buffalo Bill
+## Analyzing Historical Journals
 
-To practice text analysis this week you will be helping Dr. Seefeldt with his research. In the github repository below I have included a metadata file containing all of the associated info from each article and a txt folder with each text file. 
+In the github repository below I have included the text and metadata for a journal called _Mind and Body_ which ran from the 1890s until the late 1930s and chronicled the development of the physical education profession. This profession paralleled many important developments in American history through the Progressive Era, World War I, the 1920s, and finally the Great Depression. This dataset was OCR'd from copies stored in Google Books. Using the metadata provided and the raw text files can you use what you learned above to analyze these texts? What historical conclusions might you be able to draw?
 
-The dataset is described by Dr. Seefeldt this way: 
-> The project staff identified 99 visits to Indiana communities, some of which included performances spanning two or more days.  We located and captured a total of 720 Indiana newspaper pieces, including 273 articles promoting specific Wild West performances, 74 substantive pieces documenting locally-based reception to these performances, and 373 extraneous items, including advertisements, images, and reprints of articles generated elsewhere.  In total, the team transcribed approximately 740 items (R = Reception; P = Promotion; E = Extraneous)
-
-Use this link to read more about the project and the historical context: [https://docs.google.com/document/d/1LnmyCob5zc984EkMAx3sXlXQqhNbm9O8XV4O3HrQUbQ/edit?usp=sharing](https://docs.google.com/document/d/1LnmyCob5zc984EkMAx3sXlXQqhNbm9O8XV4O3HrQUbQ/edit?usp=sharing)
-
-You should use the rest of this worksheet to practice text analysis (and R more broadly) by exploring this dataset. Using the metadata provided and the raw text files can you use what you learned above to analyze these texts? What historical conclusions might you be able to draw? Perform the textual analysis and then write up your findings for Dr. Seefeldt. What might he be able to draw from this analysis? I will then take your work, compile it, and share it with him. Here are 3 research questions to get started. You can use one of these or come up with your own. 
-
-* Is there a difference in promotion language vs. reception language. In other words, what was BBWW selling and what did Indiana newspapers find remarkable.
-* Can we detect some change over time in promotion language and reception language (marketing and reviewing)? Were there types of characters, scenarios, action promised in promotional material and/or noted in reviews earlier vs later?
-* What can be gleaned from the items tagged as extraneous as far as topics? These are news items that are somehow related to BBWW. Crime, finances, celebrity, etc.
-
-
-Write up a research plan in the space below. What are you looking to explore?
-
-> 
-
-Lets download the data. 
+Note that when you are loading text from a file the process is slightly different. Above we were loading text from a R package which necessitates a different approach and is not something you would do frequently in practice. The readtext function takes a directory of text files and loads them into a dataframe. We also load a metadata file separately. You will need to join those two dataframes together to make use of the information in the metadata file. 
 ```{r}
 #| eval: false
 #zip file of all the .txt files. One for each issue. 
-download.file("https://github.com/dseefeldt/IndianaNewspapers/raw/main/bb-txt.zip", "bb-txt.zip")
-unzip("bb-txt.zip")
+download.file("https://github.com/regan008/8510-TextAnalysisData/raw/refs/heads/main/MindAndBody.zip", "MindAndBody.zip")
+unzip("MindAndBody.zip")
 
-# Metadata that includes info about each article.
-bb.metadata <- read.csv("https://raw.githubusercontent.com/dseefeldt/IndianaNewspapers/main/metadata.csv")
+# Metadata that includes info about each issue.
+metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/mb-metadata.csv")
+
+mb <- readtext(paste(getwd(), "/txt/*.txt", sep=""))
 ```
 
-(@) There are a few problems with this metadata from a tidy data perspective. First the date column isn't useful for assessing change over time. Can you split it into 3 columns one for year, month, and day? This will be useful if you want to try and identify change over time. Use the Date column not the FullDate column. This column is messy and you'll need to clean it up in order to have useful data. 
-```{r}
-```
-
-(@) Now lets load the BB data. This happens in a slightly different way than with the SOTU data since its local data and not data from an R package. 
-```{r}
-data_dir <- paste(getwd(), "/txt", sep = "")
-bb <- readtext(paste0(data_dir, "/*.txt"))
-```
-
-(@) Now you need to join this with the metadata for each file. Note that doc_id and Filename are the same value. How would you join two datasets together in R so that you can proceed with textual analysis? 
-```{r}
-
-```
-
-(@) Now you can begin your textual analysis for Dr. S. Add code chunks below and intersperse text to explain what you are doing and why in the text of the worksheet. 
-```{r}
-
-
-```
-
-
-(@) Finally, when you are all done. Write up your findings. What research question did you focus on and what did you learn? 
+(@) Add code chunks below and intersperse text to explain what you are doing and why.
 
 
 
 
 
 
+(@) Choose one of the datasets from this repository or use one of your own: https://github.com/regan008/8510-TextAnalysisData. Note that there are both zip files with .txt files as well as separate metadata files for each publication in this repo. 
 
-
+Write a text analysis script that explores and asks questions of the texts. At the end write a summary that analyzes the results you found. Be sure to rely on your historical knowledge. What can we learn from applying the strategies you've learned in this worksheet to analyze these documents?
 
