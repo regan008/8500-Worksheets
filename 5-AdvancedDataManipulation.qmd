@@ -1,0 +1,147 @@
+### Group_by() and Summarize()
+
+Arrange is useful for finding the highest and lowest values, but it returns those values for the entire dataset. `group_by()`, in contrast, takes an existing tbl and converts it into a grouped tbl where operations are performed "by group". Lets look at what that means in practice: 
+```{r}
+mydata <- gayguides %>% 
+            select(title, Year) %>%
+            group_by(Year)
+```
+It doesn't appear that this did much. But if you hover over this new variable in your environment pane, you'll see that its now listed as a "grouped data frame." Compare that to `gayguides` which is listed as just a data frame. This means that now we can run calculations on this data and it'll perform them "by group". Or, in other words, it'll perform operations on each year within the dataset. That's where `summarize()` comes in. `summarize()` creates a new data frame with one (or more) rows for each combination of grouping variables. In this case our grouping is by year, so the resulting data frame will group records by each year in the `gayguides` dataset.
+
+```{r}
+gayguides %>% 
+    select(title, Year) %>%
+    group_by(Year) %>%
+    summarize(count = n())
+```
+What happened here? In this example, we asked group_by to create groups based on year and then in summarize we created a column called count. We passed it the n() function which gives the current group size. What results, is a dataset that lists each year and how many locations that state has. 
+
+(@) You try, use group_by and summarize to find the total number of locations in each state, each year.
+```{r}
+
+```
+
+(@) Summarize can do more than just count rows. Can you use `summarize()` to find the average age for each occupation in the Boston Women Voters data?
+```{r}
+
+```
+
+(@) In the `gayguides` data, on average how many locations did each city in South Carolina have between 1970 and 1975?
+```{r}
+
+```
+
+(@) Filter the dataset for only the values in the southernstates list (created in the block below). Then tell me, how many locations were in all the southern states in 1975?
+```{r}
+southernstates <- c("AL", "AR", "FL", "GA", "KY", "LA", "MD", "MS", "NC", "SC", "TN", "TX", "VI", "WV")
+
+```
+
+## Re-Shaping Data: Joins and Pivots
+
+### Joins()
+At some point, you might have a situation where you want to join two tables together. For example, in the `almshouse_admissions` dataset there is a column called "Descriptions.by.Clerk" which contains a code for each occupation.
+```{r}
+data("almshouse_admissions")
+head(almshouse_admissions$Descriptions.by.Clerk)
+```
+For the purposes of working with this data in R, having only the code isn't very useful. The code book for these occupations is available here: 
+```{r}
+almshouse.occupations <- read.csv(file="https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/almshouse-occupationalcodes.csv", header=TRUE)
+```
+
+A join allows us to join these two dataframes together, matching each row based on the occupational code provided in the `Descriptions.by.Clerk` column. To do that we'll use a function known as a mutating join. A mutating join allows you to combine variables from two tables. It first matches observations by their keys, then copies across variables from one table to the other. In this case we want to join the matching rows from `almshouse.occupations` to `almshouse_admissions`. In an ideal world, the column names in the two data frames would match but since that isn't the case, we'll have to specify what columns `left_join` should use to join the two data frames. 
+
+```{r}
+almshouse_admissions <- left_join(almshouse_admissions, almshouse.occupations, by=c("Descriptions.by.Clerk"="code"))
+
+head(almshouse_admissions)
+```
+
+(@) Below I've downloaded data about each of the census regions. Join this dataset with `gayguides`. Create a data frame that includes each of the regions and the total number of locations in 1980. How many locations appear in the Mountain region in 1980?
+```{r}
+regions <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/censusregions.csv")
+```
+
+(@) Explain what you did above. What variable did you join by and why? What results?
+
+(@)How much did LGTBQ life grow between 1970 and 1980? Can you create a data frame that computes the growth in the number of locations between 1970 and 1980 for every state? For every region? 
+```{r}
+
+```
+
+
+### `pivot_longer()` and `pivot_wider()`: Converting Wide and Long Data
+
+It's possible that you won't create every dataset you use in R. Sometimes that means the dataset is in a format that isn't useful for the questions you want to ask. The dataset below is what is referred to as a "wide" data frame. That is in comparison to a "long" data frame (which would be considered tidy data).
+```{r}
+library(tidyr)
+sc.parks <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/RecreationData-Wide.csv")
+head(sc.parks)
+```
+This dataset contains all of the localities in South Carolina along with information about the types of recreational workers in that city (paid vs unpaid, male vs female). However, the problem with this dataset is that every year is a column heading making it difficult to work with. On the surface this seems like a useful format, partially because it reads left to right which is how we're accustomed to reading documents. Its easy to compare, for example, the number of female paid recreation workers between 1930 and 1945. But for computational purposes this format is less than ideal for many types of visualizations and operations. R provides functions for dealing with this. `pivot_longer()` "lengthens" your data by increasing the number of rows and decreasing the number of columns. 
+```{r}
+sc.parks <- sc.parks %>%
+  pivot_longer(!city:type_of_worker, names_to = "year", values_to = "count")
+```
+
+(@) What did this code do? 
+>
+
+(@) Here's another wide data frame. Can you turn this from a wide to a narrow data frame? 
+```{r}
+rec.spaces <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/PlayAreabyType.csv")
+```
+
+The opposite of `pivot_longer()` is `pivot_wider()`. It "widens" data by increasing the number of columns and decreasing the number of rows. We can revert `sc.parks` back to a wide dataset using this function.
+```{r}
+sc.parks %>%
+  pivot_wider(names_from = year, values_from = count)
+```
+
+(@) Widen the `sc.parks` dataset so that the column names are drawn from the type of recreation worker.
+```{r}
+
+```
+
+(@) Turn `rec.spaces` into a wide dataframe. 
+```{r}
+
+```
+
+
+## Putting it all together
+Each of the functions covered in this worksheet are valuable tools for manipulating datasets. But they are more powerful when combined. When using them to pair down a dataset, we are asking and answering a question. For example in this code from earlier in our worksheet:
+```{r}
+gayguides %>% 
+    select(title, Year) %>%
+    group_by(Year) %>%
+    summarize(count = n())
+```
+The implicit question was, "How many locations appear in each year?". The `judges` dataset in provided in the DigitalMethodsData package is a large, messy, wide dataframe that contains a lot of information. Look at this dataframe and then compose a question to ask of the data.
+
+(@) First, tell me, what is the question you are asking? 
+```{r}
+
+```
+
+(@) Now write some code to address that question. Comment the code with notes that explain your thinking as you go. Use functions like select(), filter(), etc to pair down your dataset and reshape it to address your question. 
+```{r}
+
+```
+
+(@) Now ask a question of the `gayguides` data (or another dataset of your choice). What is the question you are asking? 
+```{r}
+
+```
+
+(@) Now write some code to address that question. Comment the code with notes that explain your thinking as you go. Use functions like select(), filter(), etc to pair down your dataset and reshape it to address your question. 
+```{r}
+
+```
+
+(@) Write a function that filters the gay guides dataset. It should accept 2 arguments: year and state. When passed to the function the function should return only the title, type, state and year for each entry. 
+```{r}
+
+```
+
