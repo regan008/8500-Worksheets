@@ -1,0 +1,276 @@
+---
+title: "Worksheet 2: Data Structures"
+author: ""
+date: ""
+---
+
+_This is the third in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+
+### Control Structures: Loops & Choices
+
+Loops and control structures can be indispensable tools when writing a script that does something for you. For example, maybe you want to write a script that goes out to a website, grabs a primary source, downloads it, and saves it to a file then repeats that hundreds of times until you have a set of primary sources. To write that kind of script you'd need loops and control structures to tell your program when to start, stop, and move to the next source. 
+
+Loops and control structures are one of those programming patterns that appear in almost every language. The syntax and style change, but the core idea doesn't. This is a concept I'd recommend you master and it'll come in handy for years to come. 
+
+**Choices** and **loops** are both known as types of **control structures.**
+
+Choices, like `if`, allow you to run different code depending on the input. 
+
+Loops, like `for` and `while` allow you to repeatedly run code, typically with changing options. 
+
+Lets start with choices. 
+
+#### Choices
+
+The most important choice statement in R is an `if` statement.
+
+An `if` statement allows you to check the condition of something and then determine what should be done based on that input. 
+
+The basic format is this: 
+```{r}
+if (condition) true_action 
+#OR
+if(condition) true_action else false action 
+```
+
+And it works like this
+```{r}
+
+if (2 < 3) print(TRUE)
+if (3 < 2) print(TRUE)
+```
+
+The first example above works. Why? Because 2 is indeed less than 3. The second line has no output. Why? Becuase the conditions weren't met. 3 is not less than 2 and so it didn't print anything out.
+But we could ask it to do something else instead:
+```{r}
+if (3 < 2) print(TRUE) else print("This is clearly false.")
+```
+Most often, if statements are more complex (known as compound statements) and so they use brackets like this: 
+```{r}
+x <- 71
+if (x > 90) {
+  "A"
+} else if (x > 50) {
+  "C"
+} else {
+  "F"
+  }
+```
+
+(@) You are teaching History 100 for Clemson. Write an `if` statement that calculates whether the enrollment cap of 30 on your class has been met. 
+```{r}
+
+```
+
+(@) Create a list of presidents and store it in a variable. Use an `if` statement to check if the number of presidents in the list is more than 5. If its not, indicate that too. 
+```{r}
+
+```
+
+(@) You can also use an if statement to check a variable in a dataframe. How might you use an if statement to check if the GayGuides dataset contains any year after 1990? (Hint: first try to figure out how to determine the latest year in the dataframe and then build an if statement that checks that and prints something out if its true or false. You should think about what kind of value in contained in the Year column, how to access it, and how to check for the latest value.) 
+
+```{r}
+```
+
+(@) Reflect on the question above. How did you figure this out? What was the process you went through to build this chunk of code?
+
+> 
+
+#### Loops
+
+A **loop* is used to iterate over items in a vector. They typically follow this form:
+
+```
+for (item in vector) perform_action
+```
+
+For each item in the vector, perform_action is called once and the value of the item is updated each time. 
+
+For example, 
+```{r}
+
+for (i in 1:3) {
+  print(i)
+}
+```
+
+What does this loop do? `1:3` is shorthand for 1, 2, 3. Run it in your terminal to see its output. This code says, for every number in the range 1:3, print the number.
+
+We could do this with character vectors too. 
+```{r}
+presidents <- c("George Washington", "John Adams", "Thomas Jefferson")
+for (p in 1:length(presidents)) {
+  print(presidents[p])
+}
+```
+
+(@) Why does this work? What does `length()` do and why do we use it on `presidents`?
+
+> 
+
+Create a character vector that contains the title of each of your classes this semester. Can you write a `for` loop that prints out "I am enrolled in" and the name of each of your classes? ("I am enrolled in History 8150", "I am enrolled in History 8000".....etc). Hint: you'll need a function to combine the output and some text of your choosing inside the function. 
+
+```{r}
+
+```
+
+Sometimes we want our loop to terminate itself early. There are two statements that help us do that: 
+
+* `next` exits the current iteration
+* `break` exits the entire for loop
+
+```{r}
+for (i in 1:10) {
+  if (i < 3)
+    next
+  
+  print (i)
+}
+```
+
+`Next` skips values until the criteria is met. So in the above example it skips numbers 1 and 2 because they don't match the criteria. But in some cases we may not want to skip the entries but rather exit the loop entirely. Something like this: 
+```{r}
+for (i in 1:10) {
+  if (i < 3)
+    next
+  
+  if (i >= 5)
+    break
+  
+  print (i)
+}
+```
+
+(@) What happened here? Why did the loop only print 3 and 4? 
+
+
+(@) In the state population data, can you write a loop that pulls only states with populations between 200,000 and 250,000 in 1800? You could accomplish this a few different ways. Try to use next and break statements. 
+```{r}
+
+```
+
+(@) What if we wanted to loop through the gay guides data? Can you write a loop that iterates through the cities in the Gay Guides data and returns the title of any location in Greenville? 
+```{r}
+
+```
+
+`while` is another useful tool for writing loops. While will run a loop _while_ a condition is true. Once that condition is not true, it exits. For example: 
+```{r}
+i <- 1
+while (i < 6) {
+  print(i)
+  i <- i+1
+}
+```
+Its important to note here that `i` is defined outside the loop. Its initial value is 1 but each time the loop runs it gets 1 added to it. So the first time it runs, i = 1 and the loop prints the value then adds 1 to i. Now i = 2 but since that is still less than 6 the loop continues and prints the value then adds 1 to i. Eventually, i=6 and since 6 is not less than 6 the loop exits without printing. 
+
+`While` doesn't get used as often in R because there is often a more efficient way to do the same thing. But in other languages `while` gets used much more often. Its a good pattern to be familiar with even if you don't use in frequently in R. 
+
+## Functions 
+
+A **function** is a set of statements that are organized together to perform a specific task. You've already been using functions because R has a number of built in functions that are available to users. For example. `print()` is a function. 
+
+To be more specific, a **function** is a set of code that performs a task and returns a result. As you advance your programming skills you'll probably have certain tasks that you perform frequently. Once you've run a chunk of code several times its good practice to turn it into a function so it can be repeatedly used. 
+
+A function in R takes any arguments that may be necessary to perform the actions contained within the function, performs those functions, and then returns any result in the console. 
+
+For example, the below function takes a number as an input, multiplies it by 5 and then returns the result. 
+```{r}
+myfunction <- function(y){
+  myvalue <- y * 5
+  print(myvalue)
+}
+```
+When you run this nothing is returned. Why? You've loaded the function but you haven't called it yet. We can do that like this: 
+```{r}
+myfunction(5)
+```
+
+You'll notice that the variable we created inside the function, `myvalue`, doesn't show up. Unless we write code asking R to return the value of that variable, it'll run invisibly in the background and only give us back the result we ask for. This comes in handy when you are writing more complex functions and need to store bits of data temporarily for a calculation that is being run by the function. 
+
+Here's another example: 
+```{r}
+historyStudents <- function(studentname, class) {
+  statement <- paste("Hello ", studentname, ". Welcome to ", class, "!", sept="")
+  statement
+}
+```
+(@) Can you run this function? 
+```{r}
+
+```
+
+
+There are several components to a function. 
+
+* **Function Name**:This is the actual name of the function. It is stored in R environment as an object with this name. In the above example, the function name is `historyStudents`
+* **Arguments**: An argument is a placeholder. When a function is invoked, you pass a value to the argument. Arguments are optional; that is, a function may contain no arguments. Also arguments can have default values. In the example above, the function takes two arguments: a student's name and the name of a class. 
+* **Function Body**: The function body contains a collection of statements that defines what the function does. In the above example the function body is the code inside the `{` and `}` brackets. 
+* **Return Value**: The return value of a function is the last expression in the function body to be evaluated. In the above example, our return value is `statement` which prints our welcome statement using the names we provided in the arguments. 
+
+(@) Write a function that takes a string of text and counts the number of characters. The function should return "There are xx characters in that string." 
+```{r}
+
+```
+
+(@) Reflect on the process of building the above function. How did you go about figuring this out? 
+
+>
+
+The body of a functions can use any of the techniques we've learned in this worksheet like loops and if statements. For example: 
+```{r}
+grade <- function(x) {
+  if (x > 90) {
+  "A"
+} else if (x > 50) {
+  "C"
+} else {
+  "F"
+  }
+}
+
+
+grade(85)
+```
+We could run this function as many times as we want. 
+```{r}
+grade(95)
+grade(75)
+```
+
+(@) In the example below, why doesn't George Washington's grade get printed out? 
+```{r}
+GeorgeWashington <- grade(60)
+```
+
+>
+
+
+Here's a more complex example: 
+```{r}
+gg.locations <- function (d.city, d.year) {
+  data(gayguides)
+
+  for (i in 1:length(gayguides$city)) {
+    if (gayguides$city[i] == d.city && gayguides$Year[i] == d.year) {
+     print(paste("Found a location called ", gayguides$title[i]))
+    } else {
+      next 
+    } 
+  }
+}
+
+gg.locations("San Diego", 1980)
+```
+
+(@) Write a function that accepts two arguments: a state and a year. The function should pull all the locations in that state and year from the gayguides dataset and return a statement that says "Found a location in [state] called [location title]". (Where [state] is the state and [location title] is the title of a location in that year and state.)
+
+```{r}
+
+```
+
+(@) Use the Boston Women Voters dataset (BostonWomenVoters). Write a function that accepts the name of an occupation. Your function should return new dataframe that includes the records for every voter listed with that occupation.  
+```{r}
+
+```
+
