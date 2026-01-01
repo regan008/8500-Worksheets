@@ -102,6 +102,11 @@ Logical Operators allow you to combine or change the results of comparisons.
 
 ```
 
+(@) Can you write code that checks if a year is between 1970 AND 1980? 
+```{r}
+
+```
+
 ---
 
 ### Variables
@@ -333,6 +338,10 @@ data(gayguides)
 ```
 
 Notice that you now have a loaded dataset in your environment pane. It shows us that there are 60,698 observations (rows) of data and 14 variables (columns).
+
+It is very important to understand dataframes. Each data frame has rows and columns. **Rows** are also sometimes called observations and each row is one location in the Gay Guides. **Columns** are also sometimes referred to as variables and in this example contain information about each location: title, city, state, year, etc.). You can think of dataframes like a spreadsheet, but optimized for analysis
+
+This structure, where each row is one thing and each column describes that thing, makes data much easier to work with computationally.
 
 Let's now look at our data. You can use the `head()` function to return the first part of an object or dataset.
 ```{r}
