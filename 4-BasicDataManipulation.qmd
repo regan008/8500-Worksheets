@@ -122,6 +122,37 @@ statepopulations %>% mutate(difference = X1900 - X1800)
 
 ```
 
+### Working with Text: Introduction to `stringr`
+
+When working with historical data, we often need to clean and manipulate text. The `stringr` package (part of tidyverse) provides tools for working with strings.
+
+Common `stringr` functions:
+- `str_to_lower()`: convert to lowercase
+- `str_to_upper()`: convert to uppercase  
+- `str_trim()`: remove leading/trailing whitespace
+- `str_detect()`: detect if a pattern exists
+- `str_replace()`: replace patterns
+```{r}
+# Convert city names to uppercase
+gayguides %>% 
+  mutate(city_upper = str_to_upper(city)) %>%
+  select(city, city_upper) %>%
+  head()
+```
+
+(@) Many city names in the gayguides data have inconsistent capitalization. Can you create a new column that standardizes all city names to title case using `str_to_title()`?
+```{r}
+```
+
+(@) The `amenityfeatures` column contains codes for different features of each location. These are abbreviations in parentheses like (D) for dancing, (E) for entertainment, (G) for girls/women, etc. Can you create a new column called `has_dancing` that is TRUE if the amenity features include "(D)"? (Hint: Use `grepl()` to search for "(D)" within the amenityfeatures column.
+```{r}
+
+```
+
+(@) In the Boston Women Voters data, occupation names may have extra whitespace. Use `str_trim()` to clean the occupation column.
+```{r}
+```
+
 ### Arrange
 `Arrange()` orders the rows of a data frame by the values of selected columns. In other words it sorts a data frame by a variable. In the `gayguides` data, we can sort the data by year with the earliest year first. If we wanted the latest year first, we could do so by using the `desc()` function. 
 
@@ -141,3 +172,93 @@ gayguides %>%
 
 ```
 
+
+### Handling Missing Data
+
+Real historical data often has missing values (represented as `NA` in R). We need to know how to identify and handle them. We can use `is.na()` to check if a row contains an NA value. This function returns TRUE/FALSE values for each row.
+```{r}
+data("BostonWomenVoters")
+is.na(BostonWomenVoters$Ward)
+```
+
+We can test if an individual row is NA:
+```{r}
+is.na(BostonWomenVoters$Ward[10669])
+```
+
+Or get a count of how many are present in this dataset
+```{r}
+sum(is.na(BostonWomenVoters$Ward))
+```
+
+The `tidyr` package (part of tidyverse) has useful functions:
+- `drop_na()`: remove rows with ANY missing values
+- `drop_na(column)`: remove rows with missing values in specific column
+```{r}
+library(tidyr)
+# Remove rows where Ward is missing
+BostonWomenVoters %>% 
+  drop_na(Ward)
+
+# Check how many rows remain
+BostonWomenVoters %>% 
+  drop_na(Ward) %>%
+  nrow()
+```
+
+(@) How many rows in the BostonWomenVoters dataset have missing ward information? 
+```{r}
+```
+
+(@) Why might ward information be missing for some voters? What does this tell us about the historical record?
+
+>
+
+(@) Create a cleaned version of BostonWomenVoters that removes any row with missing data in the Ward or Age columns. How many rows are removed?
+```{r}
+```
+
+(@) Sometimes we want to keep rows with missing data but identify them. Can you create a new column called `ward_missing` that is TRUE when Ward is NA and FALSE otherwise?
+```{r}
+
+```
+
+
+### Introduction to Factors
+
+In R, **factors** are used to represent categorical data (like occupation, state, type of location). Under the hood, R stores these as integers with labels, which is efficient for analysis.
+```{r}
+# Check if a column is a factor
+class(gayguides$state)  # Usually character
+
+# Convert to factor
+gayguides %
+  mutate(state_factor = as.factor(state))
+
+# See the levels (categories)
+levels(gayguides$state_factor)
+```
+
+Why use factors?
+- Efficient storage and computation
+- Control order of categories (important for plotting!)
+- Prevent typos (can only use existing levels)
+```{r}
+# Example: order matters for plotting
+data("BostonWomenVoters")
+
+# Default alphabetical order
+BostonWomenVoters %>%
+  count(Occupation) %>%
+  head()
+```
+
+(@) Convert the `type` column in gayguides to a factor. How many different types of locations are there?
+```{r}
+```
+
+(@) In the Boston Women Voters data, convert Occupation to a factor. What are the levels?
+```{r}
+```
+
+**Note:** We'll learn more advanced factor manipulation (reordering, recoding, collapsing) in the next worksheet!
