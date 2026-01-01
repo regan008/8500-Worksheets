@@ -1,10 +1,18 @@
 ---
-title: "Worksheet 2: Data Structures"
+title: "Worksheet 3: Loops, Conditionals and Functions"
 author: ""
 date: ""
 ---
 
 _This is the third in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+
+Before we begin, let's load the libraries and data we'll need:
+```{r}
+library(DigitalMethodsData)
+data("gayguides")
+data("statepopulations")
+data("BostonWomenVoters")
+```
 
 ### Control Structures: Loops & Choices
 
@@ -114,6 +122,15 @@ Create a character vector that contains the title of each of your classes this s
 
 ```
 
+(@) Now let's practice with data. Create a loop that prints out the first 5 titles from the gayguides dataset. Hint: You'll need to loop from 1 to 5 and access `gayguides$title[i]`
+```{r}
+
+```
+
+(@) Can you modify the above loop to only print titles that contain the word "Bar"? (Hint: use grepl() to search for "Bar" in the title)
+```{r}
+```
+
 Sometimes we want our loop to terminate itself early. There are two statements that help us do that: 
 
 * `next` exits the current iteration
@@ -144,12 +161,17 @@ for (i in 1:10) {
 (@) What happened here? Why did the loop only print 3 and 4? 
 
 
-(@) In the state population data, can you write a loop that pulls only states with populations between 200,000 and 250,000 in 1800? You could accomplish this a few different ways. Try to use next and break statements. 
+(@) What if we wanted to loop through the gay guides data? Can you write a loop that iterates through the cities in the Gay Guides data and returns the title of any location in Greenville? 
 ```{r}
 
 ```
 
-(@) What if we wanted to loop through the gay guides data? Can you write a loop that iterates through the cities in the Gay Guides data and returns the title of any location in Greenville? 
+(@) The Gay Guides data is quite large (60,000+ entries). Write a loop that searches through the data and finds the first 5 locations in New York City. Your loop should:
+- Use `next` to skip any entries that aren't in New York
+- Print each NYC location's title as you find it  
+- Use `break` to stop the loop after finding 5 locations (no need to search all 60k rows!)
+
+**Hint:** Create a counter to track how many you've found.
 ```{r}
 
 ```
@@ -191,10 +213,11 @@ You'll notice that the variable we created inside the function, `myvalue`, doesn
 Here's another example: 
 ```{r}
 historyStudents <- function(studentname, class) {
-  statement <- paste("Hello ", studentname, ". Welcome to ", class, "!", sept="")
+  statement <- paste("Hello ", studentname, ". Welcome to ", class, "!", sep="")
   statement
 }
 ```
+
 (@) Can you run this function? 
 ```{r}
 
@@ -207,6 +230,18 @@ There are several components to a function.
 * **Arguments**: An argument is a placeholder. When a function is invoked, you pass a value to the argument. Arguments are optional; that is, a function may contain no arguments. Also arguments can have default values. In the example above, the function takes two arguments: a student's name and the name of a class. 
 * **Function Body**: The function body contains a collection of statements that defines what the function does. In the above example the function body is the code inside the `{` and `}` brackets. 
 * **Return Value**: The return value of a function is the last expression in the function body to be evaluated. In the above example, our return value is `statement` which prints our welcome statement using the names we provided in the arguments. 
+
+Let's start with a simpler function to build confidence.
+
+(@) Write a function called `double()` that takes a number and returns that number multiplied by 2.
+```{r}
+```
+
+(@) Write a function called `greet()` that takes a name and returns "Hello, [name]!" 
+```{r}
+```
+
+Now let's try something more complex:
 
 (@) Write a function that takes a string of text and counts the number of characters. The function should return "There are xx characters in that string." 
 ```{r}
@@ -274,3 +309,21 @@ gg.locations("San Diego", 1980)
 
 ```
 
+
+## Bringing It All Together
+
+(@) Write a function called `count_by_state()` that:
+   - Takes a state abbreviation as an argument (like "SC" or "CA")
+   - Loops through the gayguides data
+   - Counts how many locations are in that state
+   - Returns a statement like "There are XX locations in [state]"
+```{r}
+```
+
+(@) Can you modify your function to also accept a year as a second argument? So `count_by_state("SC", 1975)` would count locations in SC in 1975.
+```{r}
+```
+
+(@) Reflection: How do loops, conditionals, and functions work together? Give an example from this worksheet where you used all three.
+
+>
