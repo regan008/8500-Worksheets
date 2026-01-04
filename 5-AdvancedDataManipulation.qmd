@@ -1,4 +1,21 @@
-### Group_by() and Summarize()
+---
+title: 'Worksheet 5: Advanced Data Manipulation'
+author: ""
+date: ""
+---
+
+_This is the fifth in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+
+Last week you learned the basic dplyr verbs for data manipulation. This week we'll build on those skills with more advanced techniques: grouping data in complex ways, working with categorical data using factors, joining datasets together, and reshaping data between wide and long formats.
+
+```{r}
+library(DigitalMethodsData)
+library(tidyverse)
+data("gayguides")
+data("BostonWomenVoters")
+data("statepopulations")
+```
+## Group_by() and Summarize()
 
 Arrange is useful for finding the highest and lowest values, but it returns those values for the entire dataset. `group_by()`, in contrast, takes an existing tbl and converts it into a grouped tbl where operations are performed "by group". Lets look at what that means in practice: 
 ```{r}
@@ -16,6 +33,32 @@ gayguides %>%
 ```
 What happened here? In this example, we asked group_by to create groups based on year and then in summarize we created a column called count. We passed it the n() function which gives the current group size. What results, is a dataset that lists each year and how many locations that state has. 
 
+You can group by more than one variable at a time. This creates groups for every combination of those variables.
+```{r}
+# Group by both state AND year
+gayguides %>%
+  group_by(state, Year) %>%
+  summarize(count = n()) %>%
+  head(10)
+```
+
+This gives us the count of locations for each state in each year.
+
+You can also create multiple summary columns in a single `summarize()` call:
+```{r}
+BostonWomenVoters %>%
+  group_by(Occupation) %>%
+  summarize(
+    count = n(),
+    avg_age = mean(Age, na.rm = TRUE),
+    min_age = min(Age, na.rm = TRUE),
+    max_age = max(Age, na.rm = TRUE)
+  ) %>%
+  head()
+```
+
+**Note:** The `na.rm = TRUE` argument tells R to remove NA values before calculating. This is important when working with historical data that may have missing values.
+
 (@) You try, use group_by and summarize to find the total number of locations in each state, each year.
 ```{r}
 
@@ -31,11 +74,16 @@ What happened here? In this example, we asked group_by to create groups based on
 
 ```
 
+(@) Can you group the gayguides data by state AND type, then count how many of each type of location exists in each state? Which state has the most bars?
+```{r}
+```
+
 (@) Filter the dataset for only the values in the southernstates list (created in the block below). Then tell me, how many locations were in all the southern states in 1975?
 ```{r}
 southernstates <- c("AL", "AR", "FL", "GA", "KY", "LA", "MD", "MS", "NC", "SC", "TN", "TX", "VI", "WV")
 
 ```
+
 
 ## Re-Shaping Data: Joins and Pivots
 
@@ -111,7 +159,7 @@ sc.parks %>%
 
 
 ## Putting it all together
-Each of the functions covered in this worksheet are valuable tools for manipulating datasets. But they are more powerful when combined. When using them to pair down a dataset, we are asking and answering a question. For example in this code from earlier in our worksheet:
+Each of the functions covered in this worksheet and in last week's worksheet are valuable tools for manipulating datasets. But they are more powerful when combined. When using them to pair down a dataset, we are asking and answering a question. For example in this code from earlier in our worksheet:
 ```{r}
 gayguides %>% 
     select(title, Year) %>%
@@ -144,4 +192,20 @@ The implicit question was, "How many locations appear in each year?". The `judge
 ```{r}
 
 ```
+
+(@) Lets try another, using the BostonWomenVoters data, answer this question: "How did the age distribution of women in different occupational categories vary across wards?"
+
+Your analysis should:
+- Remove any rows with missing Age or Ward data
+- Create broader occupation categories using `fct_collapse()` or `fct_lump()`
+- Group by Ward and your occupation categories
+- Calculate average age, minimum age, and maximum age for each group
+- Arrange the results in a meaningful way
+```{r}
+```
+
+(@) What did you discover? Write 2-3 sentences about what this tells us about Boston women voters.
+
+>
+
 
