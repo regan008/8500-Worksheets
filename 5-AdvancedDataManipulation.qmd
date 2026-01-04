@@ -4,7 +4,7 @@ author: ""
 date: ""
 ---
 
-_This is the fifth in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
+_This is the fifth in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), commit your changes, push to GitHub, and submit the link to your worksheet repository on Canvas. Don't forget to commit your changes as you go - you should make multiple commits as you work through the worksheet, not just one at the end. Also, remember to update your learning log in the `logs/` folder of your repository as you work through the assignment._
 
 Last week you learned the basic dplyr verbs for data manipulation. This week we'll build on those skills with more advanced techniques: grouping data in complex ways, working with categorical data using factors, joining datasets together, and reshaping data between wide and long formats.
 
