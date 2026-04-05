@@ -113,6 +113,8 @@ For example, if I had the string: "Nothing to fear but fear itself" A bi-gram wo
 A tri-gram would look like this: 
   Nothing to fear, to fear but, but fear itself
   
+N-grams are useful for historians when trying to identify specific phrases or terms. For example, if we had a corpus about the 1930s it might be useful to look at bigrams. Thats because analyzing "New Deal" as a bigram would be more effective. If we used unigrams we'd get "new" and "deal" which lose meaning when looked at separately. N-grams let us capture phrases and concepts, not just individual words.
+
 We can use unnest_tokens() to create n-grams for us. To do that we just have to add an extra option that defines n. 
 ```{r}
 sotu_bigrams <- sotu_whole %>%
@@ -168,6 +170,8 @@ Now if you compare the word and word_stem columns you can see the effect that wo
   citizens = citizen 
 
 But it does some odd things to words like representatives. Whether this is useful for you will depend on the question your asking (and the OCR accuracy) but its a useful technique to be familiar with nevertheless. 
+
+While stemming can be useful for some applications, it's often problematic for historical research. Stemming algorithms strip words down to roots without understanding historical context or meaning. For example, "suffragist" becomes "suffrag," "temperance" becomes "temper," and "reconstruction" becomes "reconstruct"—losing the specific historical concepts these words represent. Even worse, stemming can collapse historically distinct terms into the same stem: "miner" and "minor" both become "min," or "united" and "union" both stem to "unit." For historians, these distinctions matter. A text analysis of Civil War documents that conflates "union" (the political entity) with "united" (an adjective) produces meaningless results. Similarly, analyzing women's reform movements while collapsing "suffragist," "suffragette," and "suffrage" into "suffrag" erases the meaningful differences between these terms. Unless you have a specific reason to use stemming—like dealing with extremely messy OCR or wanting to capture all grammatical forms of a common word—it's often better to skip this step and work with the original words. 
 
 ## Analysis
 
@@ -226,7 +230,7 @@ sotu.length <- tidy_sotu %>%
   arrange(desc(avg_words))
 ```
 
-(@) Think back to the metadata that we loaded about these speeches. Why are the STOU addresses for more modern president's shorter than others? (For example Bush vs Teddy Roosevelt)
+(@) Think back to the metadata that we loaded about these speeches. Why are the STOU addresses for more modern president's shorter than others? (For example Bush vs Teddy Roosevelt.) What about the presidency, and the State of the Union tradition, changed that would account for this? 
 
 >
 
@@ -293,7 +297,7 @@ head(sotu.tf.idf)
 
 The resulting data frame has 3 columns: term frequency (tf), inverse document frequency (idf) and Tf-idf (tf_idf).
 
-Lets look at what the words with the highest tf-idf score are. 
+Lets look at what the words with the highest tf-idf score are. Note that common words across all speeches -- things like "government" and "people" -- will have low tf-idf scores even if they are frequent. Thats the point!
 ```{r}
 sotu.tf.idf %>% arrange(desc(tf_idf))
 ```
@@ -304,14 +308,18 @@ sotu.tf.idf %>% arrange(desc(tf_idf))
 
 ```
 
+(@) What does a high tf-idf score tell us historically? Think about what it means when a word has a high score versus a low score. Why might a word like "watergate" have a very high tf-idf score in Nixon's speeches but a word like "government" has a low score even though it appears frequently? How might you apply this in your own research? What words would you expect to see with high and low scores?
+
+>
+
 ### Co-Occurance
 Co-occurrence gives us a sense of words that appear in the same text, but not necessarily next to each other. It shows words that are likely to co-occur. Note that this is different than topic modeling, which we'll discuss next week. 
 
-For this section we will make use of the `widyr` package. The function which helps us do this is the `pairwise_count()` function. It lets us count common pairs of words co-appearing within the same speech. This function might take a second as the resulting data frame will be incredibly large.
+For this section we will make use of the `widyr` package. The function which helps us do this is the `pairwise_count()` function. It lets us count common pairs of words co-appearing within the same speech. This function might take a second as the resulting data frame will be incredibly large. Also note that we're using the last 500 words of each speech because SOTU addresses vary greatly in length. This gives us a consistent chunk size to analyze.
 
 ```{r}
 sotu_word_pairs <- sotu_whole %>% 
-  mutate(speech_end = word(text, -5000, end = -1)) %>%  # extract last 100 words
+  mutate(speech_end = word(text, -500, end = -1)) %>%  # extract last 500 words
   unnest_tokens(word, speech_end) %>%   # tokenize
   filter(!word %in% stop_words$word) %>%  # remove stopwords
   pairwise_count(word, doc_id, sort = TRUE, upper = FALSE) # don't include upper triangle of matrix
@@ -342,6 +350,12 @@ sotu_word_pairs %>%
 ## Analyzing Historical Journals
 
 In the github repository below I have included the text and metadata for a journal called _Mind and Body_ which ran from the 1890s until the late 1930s and chronicled the development of the physical education profession. This profession paralleled many important developments in American history through the Progressive Era, World War I, the 1920s, and finally the Great Depression. This dataset was OCR'd from copies stored in Google Books. Using the metadata provided and the raw text files can you use what you learned above to analyze these texts? What historical conclusions might you be able to draw?
+
+Some questions to explore:
+- How does the vocabulary change over time periods (Progressive Era → WWI → 1920s → Depression)?
+- What words have high tf-idf scores in specific time periods?
+- Are there words that co-occur frequently? What historical events or movements might they reflect?
+- How does the journal discuss gender, physical fitness, or professionalism?
 
 Note that when you are loading text from a file the process is slightly different. Above we were loading text from a R package which necessitates a different approach and is not something you would do frequently in practice. The readtext function takes a directory of text files and loads them into a dataframe. We also load a metadata file separately. You will need to join those two dataframes together to make use of the information in the metadata file. 
 ```{r}
