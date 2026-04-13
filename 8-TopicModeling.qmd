@@ -56,19 +56,24 @@ For topic modeling, we need a Document Term Matrix, or a DTM. Topic Modeling has
 tidy_ac_words <- tidy_ac %>% count(filename, word)
 ```
 
-Now we can use `cast_dtm()` to turn `tidy_mb_words` into a dtm. 
+Now we can use `cast_dtm()` to turn `tidy_ac_words` into a dtm. 
 
 ```{r}
 ac.dtm <- tidy_ac_words %>% 
-  count(filename, word) %>% 
   cast_dtm(filename, word, n)
 ```
 
-If you run `class(mb.dtm)` in your console you will notice that it now has a class of "DocumentTermMatrix". 
+If you run `class(ac.dtm)` in your console you will notice that it now has a class of "DocumentTermMatrix". 
 
 Now that we have a dtm, we can create a topic model. For this, we'll use the topic models package and the `LDA()` function. Take a minute and read the documentation for `LDA()`.
 
 There are two important options when running `LDA()`. The first is k which is the number of topics you want the model to generate. What number topics you generate is a decision that often takes some experimentation and depends on the size of your corpus. The American City corpus isn't that bigbut still has over 209k words. In this instance, because the corpus is so small we're going to start with a small number of topics. Going above 5 causes errors with this particular corpus. Later, when you work with a different corpus you should experiment with changing the number of topics from 10 to 20 to 30 to 50 to see how it changes your model. 
+
+How do you know if you've chosen a good k value?
+- Topics should be interpretable and distinct from each other. 
+- If topics seem too similar or generic, try fewer topics.
+- If topics seem to mix unrelated concepts, try more topics.
+- Theres no "right" answer. Its about whats useful for your research question.
 
 The second important option when running `LDA()` is the seed option. You don't worry too much about what setting the seed does, but put simply - it ensures the output of the model is predictable and reproducible. Using the seed ensures that if you come back to your code later or someone else tries to run it, the model will return exactly the same results. 
 
@@ -80,7 +85,12 @@ ac.lda
 
 Now we have a LDA topic model that has 5 topics. There are two ways to look at this model: word-topic probabilities and document-topic probabilities. 
 
-Lets start with **word-topic probabilities.**
+LDA topic models have 2 key probability matricies: 
+
+* **Beta (word-topic probabilities)**: How much does each word contribute to each topic?
+* **Gamma (document-topic probabilities)**: How much of each document belongs to each topic?
+
+We will look at both. Lets start with the beta values or the **word-topic probabilities.**
 
 Every topic is made up of words that are most associated with that topic. Together these words typically form some sort of theme. To understand what this looks like the easiest thing to do is create a bar chart of the top terms in a topic. 
 
@@ -101,6 +111,9 @@ ac.top.terms %>%
   facet_wrap(~ topic, scales = "free") +
   scale_y_reordered()
 ```
+
+Note the `scales = free` option in facet_wrap. This lets each facet (topic) have its own y-axis scale. Without this, topics with lower beta values would be hard to see because they'd all share the same scale. Try removing this option to see the difference. 
+
 (@) Can you adjust the code above to show the top 10 words from just one topic?
 ```{r}
 
@@ -114,6 +127,15 @@ wordcloud(topic1$term, topic1$beta, max.words = 100, random.order = FALSE,
     rot.per = 0.3, colors = brewer.pal(6, "Dark2"))
 ```
 
+(@) Look at the topic words in each topic. Can you give each topic a descriptive label based on what it seems to be about? For example, if a topic has words like "street", "traffic", "paving", and "sidewalk," you might call it "Urban Infrastructure."
+
+Topic 1:
+Topic 2: 
+Topic 3:
+Topic 4:
+Topic 5:
+
+Not all topics will be immediately interpretable and that is normal. Some might be ocr errors or gibberish rather than meaningful themes. 
 
 Now we can see what words are most common in each topic. But the document-topic probabilities are also useful for understanding what topics are prevalent in what documents. Just as each topic is made up of a mixture of words, the LDA algorithm also assumes that each topic is made up of a mixture of topics. 
 
@@ -143,45 +165,104 @@ ggplot(data=topics.by.year, aes(x=issue_date, y=gamma)) + geom_bar(stat="identit
 
 Using this we can tell that topic 5, which from earlier had the words improve, grow, ties, contracts, and gasoline as the top five words, is most prominent in January 1915. 
 
-(@) Use the rest of this worksheet to experiment with topic modeling. I've added the code to download a much larger dataset - the issues of Mind and Body. This corpus has 413 documents ranging from the 1890s to 1936. You'll want to start with at least 25 topics. 
+## When Topic Modeling Can be Misleading
+
+Topic modeling works best with:
+- Large corpora
+- Documents that have multiple topics
+
+It will struggle with very small corpora, very short documents (like tweets or social media posts, headlines etc), documents about a single focused topic. 
+
+## Puting it all together: Topic Modeling a Historical Corpus
+
+For the final portion of this worksheet, you'll apply topic modeling to a historical corpus from the [8510-TextAnalysisData repository](https://github.com/regan008/8510-TextAnalysisData). Choose a corpus that interests you - options include Mind and Body (physical education), Woman's Journal (suffrage), and others.
+
+### Step 1: Choose Your Corpus and Research Question
+
+Before you start coding, articulate what you want to explore:
+
+(@) What corpus did you choose and why?
+
+>
+
+(@) What historical question(s) could topic modeling help you explore with this corpus? (Examples: How did discourse change over time? What topics dominated during specific periods? Can we detect shifts related to major historical events?)
+
+>
+
+### Step 2: Build Your Topic Model
+
 ```{r}
-#| eval: false
-download.file("https://github.com/regan008/8510-TextAnalysisData/blob/main/MindAndBody.zip?raw=true", "MB.zip")
-unzip("MB.zip")
+# Download and load your chosen corpus
+# Join with metadata
+# Tokenize and clean
+
+
 ```
 
 ```{r}
-# Metadata that includes info about each issue.
-mb.metadata <- read.csv("https://raw.githubusercontent.com/regan008/8510-TextAnalysisData/main/mb-metadata.csv")
+# Create your document-term matrix
+
+
 ```
 
-(@) What happens if you create a custom stopword list? How does this change the model?
 ```{r}
+# Experiment with different k values (number of topics)
+# Start with k = 10, then try 15, 20, 25, etc. Sometimes the "right" number of topics will be an odd number like 12.
+# What number gives you the most interpretable topics?
+
 
 ```
 
-(@) Can you create a topic model for just the documents in the 1920s? How does that change the model? 
+(@) How many topics did you settle on? Why did you choose this number?
+
+>
+
+### Step 3: Interpret Your Topics
+
 ```{r}
+# Generate top terms for each topic
 
 
 ```
 
-(@) Now, lets return to the Buffalo Bill data from last week. You should be able to use topic modeling to address two of the research questions provided:
-
-* Can we detect some change over time in promotion language and reception language (marketing and reviewing)? Were there types of characters, scenarios, action promised in promotional material and/or noted in reviews earlier vs later?
-* What can be gleaned from the items tagged as extraneous as far as topics? These are news items that are somehow related to BBWW. Crime, finances, celebrity, etc.
-
-To analyze this you should first generate a topic model for the buffalo bill data. Play with the number of topics until you find a number that feels about right for the dataset. I am guessing it'll be in the 8-15 range but you'll need to play with it to see what number gives you the best fit. 
-
-To address the first research question, you'll need to plot topics over time. I would create three models, one for all of the data, one for promotion, and one for reception. What do we learn by doing this?
-
-For the second, a general topic model of the extraneous articles will be needed. 
-
-Add code blocks below as necessary.
-
-(@) Finally, when you are all done. Write up your findings. What research question did you focus on and what did you learn? 
+```{r}
+# Visualize top terms
 
 
+```
 
-**This was the final worksheet for this class. You did it - you learned to code in R! Congrats!**
+(@) Label each of your topics based on the top words. What does each topic seem to be about?
+
+| Topic Number | Label/Description | Top 5 Words |
+|--------------|-------------------|-------------|
+| 1            |                   |             |
+| 2            |                   |             |
+| 3            |                   |             |
+| ...          |                   |             |
+
+(@) Are there any topics that don't make sense or seem to mix unrelated concepts? This is normal - not every topic will be interpretable.
+
+>
+
+### Step 4: Analyze Topics Over Time
+
+```{r}
+# Join document-topic probabilities with metadata
+# Plot topics over time
+
+
+```
+
+(@) What patterns do you see? Do certain topics appear more frequently in specific time periods? How does this align with what you know about the historical context?
+
+>
+
+### Step 5: Historical Analysis
+
+(@) Write 3-4 paragraphs analyzing your findings. Address your original research question(s) and connect your computational findings to historical context. What can topic modeling reveal about this corpus that close reading alone might miss? What are the limitations of this approach? 
+
+>
+
+
+---
 
